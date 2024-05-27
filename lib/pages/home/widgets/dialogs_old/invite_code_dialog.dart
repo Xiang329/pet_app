@@ -49,12 +49,12 @@ class _InviteCodeDialogState extends State<InviteCodeDialog> {
           height: 36,
           width: 96,
           child: OutlinedButton(
-            style: ButtonStyle(
-              shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              side: MaterialStateProperty.all(
-                const BorderSide(width: 2, color: UiColor.theme2_color),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              side: const BorderSide(
+                width: 2,
+                color: UiColor.theme2_color,
               ),
             ),
             child: const Text(
@@ -75,11 +75,11 @@ class _InviteCodeDialogState extends State<InviteCodeDialog> {
           height: 36,
           width: 96,
           child: TextButton(
-            style: ButtonStyle(
-              shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              backgroundColor: MaterialStateProperty.all(UiColor.theme2_color),
+              backgroundColor: UiColor.theme2_color,
             ),
             child: const Text(
               '加入',

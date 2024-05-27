@@ -172,11 +172,10 @@ class _AddFoundPageState extends State<AddFoundPage> {
             SizedBox(
               height: 42,
               child: TextButton(
-                style: ButtonStyle(
-                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8))),
-                    backgroundColor:
-                        MaterialStateProperty.all(UiColor.theme2_color)),
+                style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    backgroundColor: UiColor.theme2_color),
                 child: const Text(
                   '發布',
                   style: TextStyle(
