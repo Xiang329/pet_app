@@ -16,20 +16,21 @@ class _BreedingListItemState extends State<BreedingListItem> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 28),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const BreedingDetailPage(),
-            ),
-          );
-        },
-        child: const SizedBox(
-          height: 120,
-          child: Card(
-            color: UiColor.textinput_color,
-            child: Padding(
+      child: SizedBox(
+        height: 120,
+        child: Card(
+          color: UiColor.textinput_color,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BreedingDetailPage(),
+                ),
+              );
+            },
+            child: const Padding(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
               child: Row(
                 children: [

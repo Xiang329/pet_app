@@ -18,18 +18,19 @@ class _HospitalItemState extends State<HospitalItem> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (BuildContext context) =>
-                  PlaceDetailPage(hospital: widget.hospital),
-            ),
-          );
-        },
-        child: Card(
-          color: UiColor.textinput_color,
+      child: Card(
+        color: UiColor.textinput_color,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (BuildContext context) =>
+                    PlaceDetailPage(hospital: widget.hospital),
+              ),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
             child: Column(

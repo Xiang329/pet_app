@@ -17,20 +17,21 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 28),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.0),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AdoptionDetailPage(),
-              ),
-            );
-          },
-          child: const SizedBox(
-            height: 120,
-            child: Card(
-              color: UiColor.textinput_color,
-              child: Padding(
+        child: SizedBox(
+          height: 120,
+          child: Card(
+            color: UiColor.textinput_color,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdoptionDetailPage(),
+                  ),
+                );
+              },
+              child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

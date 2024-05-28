@@ -16,20 +16,21 @@ class _FoundListItemState extends State<FoundListItem> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 28),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const FoundDetailPage(),
-            ),
-          );
-        },
-        child: const SizedBox(
-          height: 140,
-          child: Card(
-            color: UiColor.textinput_color,
-            child: Padding(
+      child: SizedBox(
+        height: 140,
+        child: Card(
+          color: UiColor.textinput_color,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FoundDetailPage(),
+                ),
+              );
+            },
+            child: const Padding(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

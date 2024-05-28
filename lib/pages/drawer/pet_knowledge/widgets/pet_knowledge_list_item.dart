@@ -17,20 +17,21 @@ class _PetKnowledgeListItemState extends State<PetKnowledgeListItem> {
       // padding: const EdgeInsets.all(0),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.0),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const PetKnowledgeDetailPage(),
-              ),
-            );
-          },
-          child: const SizedBox(
-            height: 100,
-            child: Card(
-              color: UiColor.textinput_color,
-              child: Padding(
+        child: SizedBox(
+          height: 100,
+          child: Card(
+            color: UiColor.textinput_color,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PetKnowledgeDetailPage(),
+                  ),
+                );
+              },
+              child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
