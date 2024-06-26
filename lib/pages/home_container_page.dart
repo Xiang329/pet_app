@@ -42,14 +42,7 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
           ? null
           : AppBar(
               backgroundColor: UiColor.theme2_color,
-              title: const Text(
-                "主頁",
-                style: TextStyle(
-                  color: UiColor.text1_color,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              title: const Text("主頁"),
               actions: <Widget>[
                 SizedBox(
                   height: kToolbarHeight,

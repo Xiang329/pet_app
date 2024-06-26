@@ -1,43 +1,44 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/models/pet.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_app/pages/home/edit_pet_page.dart';
+import 'package:pet_app/providers/member_provider.dart';
 import 'package:pet_app/widgets/divider_row.dart';
 import 'package:pet_app/pages/home/widgets/notification_and_record_panel.dart';
 import 'package:pet_app/pages/home/widgets/underline_text.dart';
-import 'package:pet_app/providers/pet_providers.dart';
 import 'package:provider/provider.dart';
 
 class PetDetailPage extends StatefulWidget {
-  final Pet pet;
-  const PetDetailPage({super.key, required this.pet});
+  final int petIndex;
+  const PetDetailPage({super.key, required this.petIndex});
 
   @override
   State<PetDetailPage> createState() => _PetDetailPageState();
 }
 
 class _PetDetailPageState extends State<PetDetailPage> {
-  void removeData() {
-    print("object");
-    Provider.of<PetsProvider>(context, listen: false).removePet(widget.pet);
+  // void removeData() {
+  //   // Provider.of<PetsProvider>(context, listen: false).removePet(widget.pet);
 
-    final snackBar = SnackBar(
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.green,
-      content: Center(child: Text('寵物 ${widget.pet.name} 刪除成功')),
-      duration: const Duration(seconds: 1),
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20))),
-    );
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
+  //   final snackBar = SnackBar(
+  //     behavior: SnackBarBehavior.floating,
+  //     backgroundColor: Colors.green,
+  //     content: Center(child: Text('寵物 ${widget.pet.name} 刪除成功')),
+  //     duration: const Duration(seconds: 1),
+  //     shape: const RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.all(Radius.circular(20))),
+  //   );
+  //   ScaffoldMessenger.of(context).removeCurrentSnackBar();
+  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  // }
 
   @override
   Widget build(BuildContext context) {
+    final pet = Provider.of<MemberProvider>(context).pets![widget.petIndex];
+
     return Scaffold(
       backgroundColor: UiColor.theme1_color,
       appBar: AppBar(
@@ -79,14 +80,14 @@ class _PetDetailPageState extends State<PetDetailPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(widget.pet.name,
+                                Text(pet.name,
                                     style: const TextStyle(
                                         fontSize: 20.0,
                                         fontWeight: FontWeight.bold,
                                         color: UiColor.text1_color)),
-                                const Text(
-                                  '馬爾濟斯 ',
-                                  style: TextStyle(
+                                Text(
+                                  pet.varietyName,
+                                  style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: UiColor.text2_color),
@@ -94,7 +95,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                 DividerRow(
                                   children: [
                                     Text(
-                                      widget.pet.sex ? "男" : "女",
+                                      pet.sex ? "男" : "女",
                                       style: const TextStyle(
                                         overflow: TextOverflow.ellipsis,
                                         fontSize: 14,
@@ -103,7 +104,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                       ),
                                     ),
                                     Text(
-                                      "${widget.pet.age}歲",
+                                      "${pet.age}歲",
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 14,
@@ -111,10 +112,10 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                         color: UiColor.text2_color,
                                       ),
                                     ),
-                                    const Text(
-                                      "3公斤",
+                                    Text(
+                                      "${pet.weight}",
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: UiColor.text2_color,
@@ -122,9 +123,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                     ),
                                   ],
                                 ),
-                                const UnderLineText('生日  2019年9月30日'),
-                                const UnderLineText('結紮  是'),
-                                const UnderLineText('血型  DEA1(+)'),
+                                UnderLineText(
+                                    '生日  ${DateFormat('yyyy年MM月dd日').format(pet.birthDay)}'),
+                                UnderLineText(
+                                    '結紮  ${pet.ligation ? "男" : "女"}'),
+                                UnderLineText('血型  ${pet.blood}'),
                               ],
                             ),
                           ),
@@ -171,8 +174,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                       onGenerateRoute: (settings) {
                                         return CupertinoPageRoute(
                                             builder: (context) =>
-                                                const EditPetPage(),
-                                            settings: settings);
+                                                EditPetPage(pet: pet));
                                       },
                                     );
                                   },
@@ -193,9 +195,10 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                 ),
                               ),
                               onTap: () {
-                                removeData();
-                                Navigator.of(context, rootNavigator: true)
-                                    .pop();
+                                setState(() {});
+                                // removeData();
+                                // Navigator.of(context, rootNavigator: true)
+                                //     .pop();
                               },
                             ),
                           ],

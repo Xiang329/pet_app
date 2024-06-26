@@ -5,6 +5,7 @@ import 'package:pet_app/pages/auth/login_page.dart';
 import 'package:pet_app/pages/home_container_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pet_app/providers/member_provider.dart';
 import 'package:provider/provider.dart';
 
 class LoadPage extends StatefulWidget {
@@ -48,9 +49,17 @@ class _LoadPageState extends State<LoadPage> {
             ),
           );
         }
-        return auth.user == null
-            ? const LoginPage()
-            : const HomeContainerPage();
+        // return auth.user == null
+        //     ? const LoginPage()
+        //     : const HomeContainerPage();
+        if (auth.user == null) {
+          return const LoginPage();
+        } else {
+          Provider.of<MemberProvider>(context, listen: false)
+            ..setEamil(auth.user!.email!)
+            ..updateMember();
+          return const HomeContainerPage();
+        }
       },
     );
   }

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_app/common/apiMethods.dart';
+import 'package:pet_app/providers/member_provider.dart';
+import 'package:provider/provider.dart';
 
 class AuthModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -55,8 +57,7 @@ class AuthModel extends ChangeNotifier {
       AuthCredential credential =
           EmailAuthProvider.credential(email: email, password: password);
       UserCredential result = await _auth.signInWithCredential(credential);
-      // .then((value) => ApiMethod().postMethod("Members", userInfo)); // 無效
-      // await ApiMethod().postMethod("Members", userInfo);
+      await ApiMethod().postMethod("Members", userInfo);
       print('userCredential : $userCredential');
       print('credential : $credential');
       print('result : $result');

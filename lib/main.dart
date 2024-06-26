@@ -4,8 +4,8 @@ import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/providers/auth_provider.dart';
 import 'package:pet_app/providers/common_soon_notify_provider.dart';
 import 'package:pet_app/providers/item_provider.dart';
+import 'package:pet_app/providers/member_provider.dart';
 import 'package:pet_app/providers/pet_admin_provider.dart';
-import 'package:pet_app/providers/pet_providers.dart';
 import 'package:pet_app/routes/app_routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +23,10 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AuthModel()),
-        ChangeNotifierProvider(create: (context) => PetsProvider()),
         ChangeNotifierProvider(create: (context) => CommonSoonNotifyProvider()),
         ChangeNotifierProvider(create: (context) => PetAdminsProvider()),
         ChangeNotifierProvider(create: (context) => ItemProvider()),
+        ChangeNotifierProvider(create: (context) => MemberProvider()),
       ],
       child: const MyApp(),
     ),

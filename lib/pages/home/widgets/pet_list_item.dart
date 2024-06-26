@@ -1,17 +1,16 @@
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/models/pet.dart';
+import 'package:pet_app/models/member.dart';
 import 'package:pet_app/pages/home/pet_detail_page.dart';
-import 'package:pet_app/providers/pet_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:provider/provider.dart';
 
 class PetItem extends StatefulWidget {
   final Pet pet;
+  final int petIndex;
   // final VoidCallback onDismissed; // 添加回調函數
   // const PetItem({super.key, required this.pet, required this.onDismissed});
-  const PetItem({super.key, required this.pet});
+  const PetItem({super.key, required this.pet, required this.petIndex});
 
   @override
   State<PetItem> createState() => _PetItemState();
@@ -22,7 +21,7 @@ class _PetItemState extends State<PetItem> {
   // 只需在回調中移除相應的 Pet 對象
   void removeData() {
     // widget.onDismissed();
-    Provider.of<PetsProvider>(context, listen: false).removePet(widget.pet);
+    // Provider.of<PetsProvider>(context, listen: false).removePet(widget.pet);
 
     final snackBar = SnackBar(
       behavior: SnackBarBehavior.floating,
@@ -50,7 +49,9 @@ class _PetItemState extends State<PetItem> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PetDetailPage(pet: widget.pet),
+                  builder: (context) => PetDetailPage(
+                    petIndex: widget.petIndex,
+                  ),
                 ),
               );
             },
@@ -111,9 +112,9 @@ class _PetItemState extends State<PetItem> {
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                     color: UiColor.text1_color)),
-            const Text(
-              '馬爾濟斯 ',
-              style: TextStyle(
+            Text(
+              pet.varietyName,
+              style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: UiColor.text2_color),
@@ -122,7 +123,7 @@ class _PetItemState extends State<PetItem> {
               child: Row(
                 children: [
                   Text(
-                    widget.pet.sex ? "男" : "女",
+                    pet.sex ? "男" : "女",
                     style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -145,9 +146,9 @@ class _PetItemState extends State<PetItem> {
                     width: 26,
                     color: UiColor.text2_color,
                   ),
-                  const Text(
-                    "3公斤",
-                    style: TextStyle(
+                  Text(
+                    "${pet.weight}公斤",
+                    style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: UiColor.text2_color),

@@ -3,7 +3,7 @@ import 'package:pet_app/pages/home/notify_list_page.dart';
 import 'package:pet_app/pages/home/pet_list_page.dart';
 import 'package:pet_app/pages/home/widgets/comming_soon_notify_list_item.dart';
 import 'package:pet_app/providers/common_soon_notify_provider.dart';
-import 'package:pet_app/providers/pet_providers.dart';
+import 'package:pet_app/providers/member_provider.dart';
 import 'package:pet_app/pages/home/widgets/pet_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -17,11 +17,20 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  dynamic memberProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    memberProvider =
+        Provider.of<MemberProvider>(context, listen: false).updateMember();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final pets = Provider.of<PetsProvider>(context, listen: false).pets;
     final notifys =
         Provider.of<CommonSoonNotifyProvider>(context, listen: false).notifys;
+    final pets = Provider.of<MemberProvider>(context).pets;
 
     return Scaffold(
       backgroundColor: UiColor.theme1_color,
@@ -40,7 +49,7 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w500),
                 ),
                 Visibility(
-                  visible: pets.length > 3 ? true : false,
+                  visible: pets!.length > 3 ? true : false,
                   child: IconButton(
                     icon: const Icon(
                       Icons.keyboard_arrow_right,
@@ -58,26 +67,31 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            SlidableAutoCloseBehavior(
-              // 使用 Slidable 時，如果使用 ListView.builder，則不可以設定itemExtent調整子元件高度，
-              // 否則出錯A dismissed Slidable widget is still part of the tree.
-              child: Consumer<PetsProvider>(
-                builder: (context, provider, _) {
-                  return ListView.separated(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount:
-                        provider.pets.length <= 3 ? provider.pets.length : 3,
-                    itemBuilder: (context, index) {
-                      return PetItem(
-                        pet: provider.pets[index],
-                      );
-                    },
-                    separatorBuilder: (BuildContext context, int index) =>
-                        const SizedBox(height: 0),
+            FutureBuilder(
+              future: memberProvider,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else {
+                  return SlidableAutoCloseBehavior(
+                    // 使用 Slidable 時，如果使用 ListView.builder，則不可以設定itemExtent調整子元件高度，
+                    // 否則出錯A dismissed Slidable widget is still part of the tree.
+                    child: ListView.separated(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: pets.length <= 3 ? pets.length : 3,
+                      itemBuilder: (context, index) {
+                        return PetItem(
+                          pet: pets[index],
+                          petIndex: index,
+                        );
+                      },
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const SizedBox(height: 0),
+                    ),
                   );
-                },
-              ),
+                }
+              },
             ),
             const SizedBox(height: 20),
             Row(

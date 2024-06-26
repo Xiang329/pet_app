@@ -1,6 +1,9 @@
+import 'package:pet_app/common/apiMethods.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/models/member.dart';
 import 'package:pet_app/providers/auth_provider.dart';
 import 'package:pet_app/common/app_assets.dart';
+import 'package:pet_app/providers/member_provider.dart';
 import 'package:pet_app/routes/app_routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +18,30 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
+  late Member member;
+  late String memberName = '';
+
+  @override
+  void initState() {
+    // _loadData();
+    super.initState();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final userEmail =
+          Provider.of<AuthModel>(context, listen: false).user?.email;
+      member = await ApiMethod().getMethod_Member(userEmail);
+      memberName = member.memberName;
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<AuthModel>(context, listen: false).user;
+    final memberProvider = Provider.of<MemberProvider>(context);
+    // print('名字${memberProvider.member!.memberName}');
 
     return Scaffold(
       backgroundColor: UiColor.theme2_color,
@@ -44,13 +68,15 @@ class _AccountPageState extends State<AccountPage> {
                   child: Column(
                     children: [
                       const SizedBox(height: 70),
-                      Text(
-                        "${user?.email}",
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      memberProvider.isLoading
+                          ? const CircularProgressIndicator()
+                          : Text(
+                              memberProvider.member!.memberName,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                       const SizedBox(height: 57),
                       ListTile(
                         leading:

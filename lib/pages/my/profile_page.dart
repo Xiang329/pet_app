@@ -1,11 +1,12 @@
+import 'package:pet_app/common/apiMethods.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:pet_app/common/server.dart';
 import 'package:pet_app/providers/auth_provider.dart';
+import 'package:pet_app/providers/member_provider.dart';
 import 'package:pet_app/widgets/filled_text_field.dart';
 import 'package:pet_app/models/member.dart';
 import 'package:provider/provider.dart';
@@ -36,19 +37,31 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final userEmail =
           Provider.of<AuthModel>(context, listen: false).user?.email;
-      member = await UserService.feachUserData(userEmail!);
-      nameController.text = member.memberName!;
-      nickNameController.text = member.memberNickname!;
+      member = await ApiMethod().getMethod_Member(userEmail);
+      nameController.text = member.memberName;
+      nickNameController.text = member.memberNickname;
       dateController.text =
-          DateFormat('yyyy/MM/dd').format(member.memberBirthDay!);
-      emailController.text = member.memberEmail!;
-      phoneNumberController.text = member.memberMobile!;
+          DateFormat('yyyy/MM/dd').format(member.memberBirthDay);
+      _datetime = member.memberBirthDay;
+      emailController.text = member.memberEmail;
+      phoneNumberController.text = member.memberMobile;
     } catch (e) {
       print(e);
     }
   }
 
   Widget _buildView() {
+    final userEmail =
+        Provider.of<AuthModel>(context, listen: false).user?.email;
+    final member = Provider.of<MemberProvider>(context).member!;
+    nameController.text = member.memberName;
+    nickNameController.text = member.memberNickname;
+    dateController.text =
+        DateFormat('yyyy/MM/dd').format(member.memberBirthDay);
+    _datetime = member.memberBirthDay;
+    emailController.text = member.memberEmail;
+    phoneNumberController.text = member.memberMobile;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 47, left: 20, right: 20),
       child: Column(
@@ -195,23 +208,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   color: Colors.white,
                 ),
               ),
-              onPressed: () {
+              onPressed: () async {
                 final userData = {
                   "Member_ID": member.memberId,
                   'Member_Email': member.memberEmail,
                   'Member_Name': nameController.text,
-                  'Member_BirthDay': DateFormat('yyyy/MM/dd')
-                      .parse(dateController.text)
-                      .toString(),
+                  'Member_BirthDay': dateController.text,
                   'Member_Mobile': phoneNumberController.text,
                   'Member_Nickname': nickNameController.text,
                 };
-                print(userData);
-                // final userEmail =
-                //     Provider.of<AuthModel>(context, listen: false)
-                //         .user!
-                //         .email;
-                // UserService.putSinglePost(userEmail!, userData).then((value) => _loadData());
+                await ApiMethod().putMethod_Member(userEmail, userData);
+                Provider.of<MemberProvider>(context, listen: false)
+                    .updateMember();
               },
             ),
           ),
@@ -227,13 +235,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: UiColor.theme1_color,
       appBar: AppBar(
         backgroundColor: UiColor.theme1_color,
-        title: const Text(
-          "個人檔案",
-          style: TextStyle(
-              color: Color(0xFF593922),
-              fontSize: 20.0,
-              fontWeight: FontWeight.w500),
-        ),
+        title: const Text("個人檔案"),
         leading: IconButton(
           icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
           onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
