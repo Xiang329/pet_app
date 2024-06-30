@@ -361,16 +361,7 @@ class _AddPetSetp2State extends State<AddPetSetp2> {
                       "Pet_InvCode": "000000",
                     };
                     print(petData);
-                    dynamic response =
-                        await ApiMethod().postMethod('Pets', petData);
-                    final petManagementData = {
-                      "PM_MemberID": memberProvider.memberID,
-                      "PM_PetID": response['Pet_ID'],
-                      "PM_Permissions": true
-                    };
-                    await ApiMethod()
-                        .postMethod('PetManagements', petManagementData);
-                    await memberProvider.updateMember();
+                    memberProvider.addPet(petData);
                     Navigator.of(context, rootNavigator: true).pop();
                   },
                 ),

@@ -101,9 +101,9 @@ class ApiMethod {
 
   dynamic deleteMethod(uri, id) async {
     print('enter deleteMethod');
-    String apiUri = "http://35.221.172.90/api/$uri/$id";
+    String apiUri = "$baseUrl/$uri/$id";
     print('apiUri : $apiUri');
-    await http.delete(
+    final response = await http.delete(
       Uri.parse(apiUri),
       headers: {"Content-Type": "application/json"},
     );

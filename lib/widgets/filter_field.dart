@@ -6,11 +6,13 @@ class FilterField extends StatefulWidget {
   final Widget filterPage;
   final EdgeInsetsGeometry? margin;
   final bool useHorizontalScroll;
+  final Function(Map<String, String>)? onFilterApplied;
   const FilterField({
     super.key,
     required this.filterPage,
     this.margin = const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
     this.useHorizontalScroll = false,
+    this.onFilterApplied,
   });
 
   @override
@@ -20,6 +22,7 @@ class FilterField extends StatefulWidget {
 class _FilterFieldState extends State<FilterField> {
   // List<String> selectedFilters = [];
   List selectedFilters = [];
+  Map<String, String> selectedMap = {};
 
   void _openFilterDialog() async {
     final selectedFilter = showModalBottomSheet(
@@ -41,9 +44,12 @@ class _FilterFieldState extends State<FilterField> {
     );
     // 新增 Filter
     selectedFilter.then((value) {
+      selectedFilters = [];
       if (value != null) {
         setState(() {
-          selectedFilters.addAll(value);
+          selectedMap = value;
+          widget.onFilterApplied!(selectedMap);
+          selectedFilters.addAll(selectedMap.values.toList());
         });
       }
     });
@@ -51,7 +57,10 @@ class _FilterFieldState extends State<FilterField> {
 
   void _removeFilter(int index) {
     setState(() {
+      final key = selectedMap.keys.elementAt(index);
       selectedFilters.removeAt(index);
+      selectedMap.remove(key);
+      widget.onFilterApplied!(selectedMap);
     });
   }
 

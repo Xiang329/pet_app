@@ -1,10 +1,12 @@
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_app/models/animal.dart';
 import 'package:pet_app/pages/drawer/adoption/adoption_detail.dart';
 import 'package:pet_app/widgets/divider_row.dart';
 
 class AdoptionListItem extends StatefulWidget {
-  const AdoptionListItem({super.key});
+  final Animal animal;
+  const AdoptionListItem({super.key, required this.animal});
 
   @override
   State<AdoptionListItem> createState() => _AdoptionListItemState();
@@ -27,12 +29,15 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const AdoptionDetailPage(),
+                    builder: (context) => AdoptionDetailPage(
+                      animal: widget.animal,
+                    ),
                   ),
                 );
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,18 +45,18 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
                     DividerRow(
                       children: [
                         Text(
-                          "狗",
+                          widget.animal.animalKind,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w600,
                             color: UiColor.text1_color,
                           ),
                         ),
                         Text(
-                          "瑪爾濟斯",
+                          widget.animal.animalVariety,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w600,
                             color: UiColor.text1_color,
@@ -61,21 +66,21 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
                     ),
                     Text.rich(
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14.0,
                         color: UiColor.text2_color,
                       ),
                       TextSpan(
                         children: [
-                          TextSpan(
+                          const TextSpan(
                             text: "性別　",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           TextSpan(
-                            text: "公",
-                            style: TextStyle(
+                            text: widget.animal.animalSex,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -84,21 +89,21 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
                     ),
                     Text.rich(
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14.0,
                         color: UiColor.text2_color,
                       ),
                       TextSpan(
                         children: [
-                          TextSpan(
+                          const TextSpan(
                             text: "收容所　",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           TextSpan(
-                            text: "臺北市動物之家",
-                            style: TextStyle(
+                            text: widget.animal.shelterName,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w500,
                             ),
                           ),

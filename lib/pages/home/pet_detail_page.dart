@@ -20,24 +20,10 @@ class PetDetailPage extends StatefulWidget {
 }
 
 class _PetDetailPageState extends State<PetDetailPage> {
-  // void removeData() {
-  //   // Provider.of<PetsProvider>(context, listen: false).removePet(widget.pet);
-
-  //   final snackBar = SnackBar(
-  //     behavior: SnackBarBehavior.floating,
-  //     backgroundColor: Colors.green,
-  //     content: Center(child: Text('寵物 ${widget.pet.name} 刪除成功')),
-  //     duration: const Duration(seconds: 1),
-  //     shape: const RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.all(Radius.circular(20))),
-  //   );
-  //   ScaffoldMessenger.of(context).removeCurrentSnackBar();
-  //   ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  // }
-
   @override
   Widget build(BuildContext context) {
-    final pet = Provider.of<MemberProvider>(context).pets![widget.petIndex];
+    final pet = Provider.of<MemberProvider>(context, listen: false)
+        .pets![widget.petIndex];
 
     return Scaffold(
       backgroundColor: UiColor.theme1_color,
@@ -178,7 +164,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                       },
                                     );
                                   },
-                                );
+                                ).then((value) => setState(() {}));
                               },
                             ),
                             const PopupMenuDivider(height: 0),
@@ -195,10 +181,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                 ),
                               ),
                               onTap: () {
-                                setState(() {});
-                                // removeData();
-                                // Navigator.of(context, rootNavigator: true)
-                                //     .pop();
+                                Provider.of<MemberProvider>(context,
+                                        listen: false)
+                                    .deletePet(pet.pmid, pet.id);
+                                Navigator.of(context, rootNavigator: true)
+                                    .pop();
                               },
                             ),
                           ],

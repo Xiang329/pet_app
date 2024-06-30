@@ -17,6 +17,8 @@ class PetListPage extends StatefulWidget {
 class _PetListPageState extends State<PetListPage> {
   @override
   Widget build(BuildContext context) {
+    final pets = Provider.of<MemberProvider>(context).pets!;
+
     return Scaffold(
       backgroundColor: UiColor.theme1_color,
       appBar: AppBar(
@@ -30,21 +32,19 @@ class _PetListPageState extends State<PetListPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: SlidableAutoCloseBehavior(
-          child: Consumer<MemberProvider>(builder: (context, provider, _) {
-            return ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: provider.member!.pet.length,
-              itemBuilder: (context, index) {
-                return PetItem(
-                  pet: provider.member!.pet[index],
-                  petIndex: index,
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(height: 0),
-            );
-          }),
+          child: ListView.separated(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: pets.length,
+            itemBuilder: (context, index) {
+              return PetItem(
+                pet: pets[index],
+                petIndex: index,
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) =>
+                const SizedBox(height: 0),
+          ),
         ),
       ),
     );

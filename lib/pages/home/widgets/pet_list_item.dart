@@ -4,12 +4,13 @@ import 'package:pet_app/models/member.dart';
 import 'package:pet_app/pages/home/pet_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:pet_app/providers/member_provider.dart';
+import 'package:provider/provider.dart';
 
 class PetItem extends StatefulWidget {
   final Pet pet;
   final int petIndex;
-  // final VoidCallback onDismissed; // 添加回調函數
-  // const PetItem({super.key, required this.pet, required this.onDismissed});
+
   const PetItem({super.key, required this.pet, required this.petIndex});
 
   @override
@@ -17,24 +18,6 @@ class PetItem extends StatefulWidget {
 }
 
 class _PetItemState extends State<PetItem> {
-  // 必須確保更新狀態，否則出錯 A dismissed Slidable widget is still part of the tree.
-  // 只需在回調中移除相應的 Pet 對象
-  void removeData() {
-    // widget.onDismissed();
-    // Provider.of<PetsProvider>(context, listen: false).removePet(widget.pet);
-
-    final snackBar = SnackBar(
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.green,
-      content: Center(child: Text('寵物 ${widget.pet.name} 刪除成功')),
-      duration: const Duration(seconds: 1),
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20))),
-    );
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -64,7 +47,8 @@ class _PetItemState extends State<PetItem> {
                 // 寬度比例
                 extentRatio: 0.4,
                 dismissible: DismissiblePane(onDismissed: () {
-                  removeData();
+                  Provider.of<MemberProvider>(context, listen: false)
+                      .deletePet(widget.pet.pmid, widget.pet.id);
                 }),
                 motion: const DrawerMotion(),
                 children: [
@@ -77,7 +61,10 @@ class _PetItemState extends State<PetItem> {
                     icon: Icons.account_circle,
                   ),
                   SlidableAction(
-                    onPressed: (context) => removeData(),
+                    onPressed: (context) {
+                      Provider.of<MemberProvider>(context, listen: false)
+                          .deletePet(widget.pet.pmid, widget.pet.id);
+                    },
                     backgroundColor: const Color(0xffe35050),
                     foregroundColor: Colors.white,
                     icon: Icons.delete,

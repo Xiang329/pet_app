@@ -13,7 +13,9 @@ import 'package:pet_app/pages/search/search_place_page.dart';
 import 'package:pet_app/pages/socail/socail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pet_app/providers/member_provider.dart';
 import 'package:pet_app/routes/app_routes.dart';
+import 'package:provider/provider.dart';
 
 class HomeContainerPage extends StatefulWidget {
   const HomeContainerPage({super.key});
@@ -34,6 +36,8 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final memberProvider = Provider.of<MemberProvider>(context);
+
     return Scaffold(
       backgroundColor: UiColor.theme1_color,
       body: IndexedStack(index: currentIndex, children: pages),
@@ -118,24 +122,26 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              const SizedBox(
+              SizedBox(
                 height: 200,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 40,
                       backgroundImage: AssetImage(AssetsImages.hamsterJpg),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      "名稱",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: UiColor.text1_color,
-                      ),
-                    ),
+                    const SizedBox(height: 10),
+                    memberProvider.isLoading
+                        ? const CircularProgressIndicator()
+                        : Text(
+                            memberProvider.member!.memberName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: UiColor.text1_color,
+                            ),
+                          ),
                   ],
                 ),
               ),

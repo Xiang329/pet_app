@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/models/animal.dart';
 
 class AdoptionDetailPage extends StatefulWidget {
-  const AdoptionDetailPage({super.key});
+  final Animal animal;
+  const AdoptionDetailPage({super.key, required this.animal});
 
   @override
   State<AdoptionDetailPage> createState() => _AdoptionDetailPageState();
@@ -26,17 +28,17 @@ class _AdoptionDetailPageState extends State<AdoptionDetailPage> {
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
                 color: UiColor.textinput_color,
                 child: Padding(
-                  padding: EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "動物資訊",
                         style: TextStyle(
                           fontSize: 16,
@@ -44,152 +46,152 @@ class _AdoptionDetailPageState extends State<AdoptionDetailPage> {
                           color: UiColor.text1_color,
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "入所日期　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "2024年1月27日",
-                              style: TextStyle(
+                              text: widget.animal.animalCreatetime,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "收容編號　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "VAAAG113012704",
-                              style: TextStyle(
+                              text: widget.animal.animalSubid,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "類別　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "犬",
-                              style: TextStyle(
+                              text: widget.animal.animalKind,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "品種　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "瑪爾濟斯",
-                              style: TextStyle(
+                              text: widget.animal.animalVariety,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "毛色　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "白",
-                              style: TextStyle(
+                              text: widget.animal.animalColour,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "性別　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "公",
-                              style: TextStyle(
+                              text: widget.animal.animalSex,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
-                      Text.rich(
+                      const SizedBox(height: 5),
+                      const Text.rich(
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14.0,
@@ -204,7 +206,7 @@ class _AdoptionDetailPageState extends State<AdoptionDetailPage> {
                               ),
                             ),
                             TextSpan(
-                              text: "Bogi",
+                              text: "待刪除",
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
@@ -216,15 +218,15 @@ class _AdoptionDetailPageState extends State<AdoptionDetailPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Card(
                 color: UiColor.textinput_color,
                 child: Padding(
-                  padding: EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "收容所資訊",
                         style: TextStyle(
                           fontSize: 16,
@@ -232,96 +234,96 @@ class _AdoptionDetailPageState extends State<AdoptionDetailPage> {
                           color: UiColor.text1_color,
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "公告收容所　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "臺北市動物之家",
-                              style: TextStyle(
+                              text: widget.animal.shelterName,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "收容所電話　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "02-87913254",
-                              style: TextStyle(
+                              text: widget.animal.shelterTel,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "收容所地址　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "臺北市內湖區安美街191號",
-                              style: TextStyle(
+                              text: widget.animal.shelterAddress,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Text.rich(
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14.0,
                           color: UiColor.text2_color,
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "描述　",
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
-                              text: "皮膚病嚴重",
-                              style: TextStyle(
+                              text: widget.animal.animalRemark,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

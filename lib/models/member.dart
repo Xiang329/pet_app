@@ -65,6 +65,8 @@ class Pet {
   final String invCode;
   final String varietyName;
   final String className;
+  final List<dynamic> petManagement;
+  final int pmid;
 
   Pet({
     required this.id,
@@ -81,6 +83,8 @@ class Pet {
     required this.invCode,
     required this.varietyName,
     required this.className,
+    required this.petManagement,
+    required this.pmid,
   });
 
   factory Pet.fromJson(Map<String, dynamic> json) {
@@ -99,6 +103,9 @@ class Pet {
       invCode: json['Pet_InvCode'],
       varietyName: json['PetVariety']['PV_VarietyName'],
       className: json['PetVariety']['PetClass']['PC_ClassName'],
+      petManagement: List.from((json['PetManagement'] as List).map((x) => x)),
+      pmid: List.from((json['PetManagement'] as List).map((x) => x))
+          .first['PM_ID'],
     );
   }
 
@@ -118,7 +125,9 @@ class Pet {
         'mugShot: $mugShot, '
         'invCode: $invCode, '
         'varietyName: $varietyName, '
-        'className: $className'
+        'className: $className, '
+        'petManagement: $petManagement'
+        'pmid: $pmid'
         '}';
   }
 }

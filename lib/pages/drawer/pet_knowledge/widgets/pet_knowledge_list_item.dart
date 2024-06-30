@@ -1,9 +1,11 @@
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_app/models/pet_knowledge.dart';
 import 'package:pet_app/pages/drawer/pet_knowledge/pet_knowledge_detail_page.dart';
 
 class PetKnowledgeListItem extends StatefulWidget {
-  const PetKnowledgeListItem({super.key});
+  final PetKnowledge petKnowledge;
+  const PetKnowledgeListItem({super.key, required this.petKnowledge});
 
   @override
   State<PetKnowledgeListItem> createState() => _PetKnowledgeListItemState();
@@ -31,25 +33,25 @@ class _PetKnowledgeListItemState extends State<PetKnowledgeListItem> {
                   ),
                 );
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "標題",
                       style: TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.w600,
                           color: UiColor.text1_color),
                     ),
-                    // SizedBox(),
                     Text(
-                      '內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文',
+                      widget.petKnowledge.pkProposalContent,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: UiColor.text2_color),

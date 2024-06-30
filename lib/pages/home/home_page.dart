@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final notifys =
         Provider.of<CommonSoonNotifyProvider>(context, listen: false).notifys;
-    final pets = Provider.of<MemberProvider>(context).pets;
+    final pets = Provider.of<MemberProvider>(context).pets!;
 
     return Scaffold(
       backgroundColor: UiColor.theme1_color,
@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w500),
                 ),
                 Visibility(
-                  visible: pets!.length > 3 ? true : false,
+                  visible: pets.length > 3 ? true : false,
                   child: IconButton(
                     icon: const Icon(
                       Icons.keyboard_arrow_right,
