@@ -3,15 +3,22 @@ import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/notification/add_notification_page.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/notification/edit_notification_page.dart';
-import 'package:pet_app/providers/item_provider.dart';
-import 'package:pet_app/widgets/slidable_list_item.dart';
+import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/pages/home/widgets/slidable_list_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:pet_app/widgets/empty_data.dart';
 import 'package:provider/provider.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
+  final int petIndex;
+  final bool editable;
+  const NotificationPage({
+    super.key,
+    required this.petIndex,
+    required this.editable,
+  });
 
   @override
   State<NotificationPage> createState() => _NotificationPageState();
@@ -20,35 +27,54 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage> {
   @override
   Widget build(BuildContext context) {
+    final petId = Provider.of<AppProvider>(context)
+        .petManagement[widget.petIndex]
+        .pet!
+        .petId;
+    final adviceList = Provider.of<AppProvider>(context)
+        .petManagement[widget.petIndex]
+        .pet!
+        .adviceList;
+
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
-        backgroundColor: UiColor.theme2_color,
+        backgroundColor: UiColor.theme2Color,
         title: const Text("通知"),
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            SlidableAutoCloseBehavior(
-              // 使用 Slidable 時，如果使用 ListView.builder，則不可以設定itemExtent調整子元件高度，
-              // 否則出錯A dismissed Slidable widget is still part of the tree.
-              child: Consumer<ItemProvider>(builder: (context, provider, _) {
-                return ListView.separated(
+      body: Builder(builder: (context) {
+        if (adviceList.isEmpty) {
+          return const Center(
+              child: EmptyData(
+            text: '尚無通知',
+          ));
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              SlidableAutoCloseBehavior(
+                // 使用 Slidable 時，如果使用 ListView.builder，則不可以設定itemExtent調整子元件高度，
+                // 否則出錯A dismissed Slidable widget is still part of the tree.
+                child: ListView.separated(
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: provider.notifyItem.length,
+                  itemCount: adviceList.length,
                   itemBuilder: (context, index) {
                     return SlidableItem(
-                      itemList: provider.notifyItem,
-                      item: provider.notifyItem[index],
+                      advice: adviceList[index],
+                      editable: widget.editable,
                       onTap: () {
                         showModalBottomSheet(
-                          clipBehavior: Clip.antiAlias,
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
                           useRootNavigator: true,
                           isScrollControlled: true,
                           context: context,
@@ -60,8 +86,9 @@ class _NotificationPageState extends State<NotificationPage> {
                             return Navigator(
                               onGenerateRoute: (settings) {
                                 return CupertinoPageRoute(
-                                    builder: (context) =>
-                                        const EditNotificationPage(),
+                                    builder: (context) => EditNotificationPage(
+                                          advicd: adviceList[index],
+                                        ),
                                     settings: settings);
                               },
                             );
@@ -72,40 +99,44 @@ class _NotificationPageState extends State<NotificationPage> {
                   },
                   separatorBuilder: (BuildContext context, int index) =>
                       const SizedBox(height: 0),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+      floatingActionButton: !widget.editable
+          ? null
+          : FloatingActionButton(
+              backgroundColor: UiColor.theme2Color,
+              shape: const CircleBorder(),
+              onPressed: () {
+                showModalBottomSheet(
+                  clipBehavior: Clip.antiAliasWithSaveLayer,
+                  useRootNavigator: true,
+                  isScrollControlled: true,
+                  context: context,
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.90,
+                  ),
+                  builder: (BuildContext context) {
+                    return Navigator(
+                      onGenerateRoute: (settings) {
+                        return CupertinoPageRoute(
+                          builder: (context) =>
+                              AddNotificationPage(petId: petId),
+                          settings: settings,
+                        );
+                      },
+                    );
+                  },
                 );
-              }),
+              },
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+              ),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: UiColor.theme2_color,
-        shape: const CircleBorder(),
-        onPressed: () {
-          showModalBottomSheet(
-            clipBehavior: Clip.antiAlias,
-            useRootNavigator: true,
-            isScrollControlled: true,
-            context: context,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.90,
-            ),
-            builder: (BuildContext context) {
-              return Navigator(
-                onGenerateRoute: (settings) {
-                  return CupertinoPageRoute(
-                      builder: (context) => const AddNotificationPage(),
-                      settings: settings);
-                },
-              );
-            },
-          );
-        },
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-      ),
     );
   }
 }

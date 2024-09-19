@@ -1,9 +1,14 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_app/pages/socail/add_post_page.dart';
 import 'package:pet_app/pages/socail/my_post_page.dart';
 import 'package:pet_app/pages/socail/widgets/post_item.dart';
+import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/widgets/empty_data.dart';
+import 'package:provider/provider.dart';
 
 class SocialPage extends StatefulWidget {
   const SocialPage({super.key});
@@ -13,12 +18,25 @@ class SocialPage extends StatefulWidget {
 }
 
 class _SocialPageState extends State<SocialPage> {
+  late Future fetchAllSocialMedias;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAllSocialMedias =
+        Provider.of<AppProvider>(context, listen: false).fetchAllSocialMedias();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final memberId = Provider.of<AppProvider>(context).memberId;
+    final allSocialMedias =
+        Provider.of<AppProvider>(context).allSocialMediasList;
+
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
-        backgroundColor: UiColor.theme2_color,
+        backgroundColor: UiColor.theme2Color,
         title: const Text("社群"),
         actions: [
           SizedBox(
@@ -27,48 +45,72 @@ class _SocialPageState extends State<SocialPage> {
             child: IconButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute<void>(
+                  CupertinoPageRoute<void>(
                     builder: (BuildContext context) => const MyPostPage(),
                   ),
                 );
               },
-              icon: const Icon(Icons.my_library_books),
+              icon: SvgPicture.asset(AssetsImages.articleSvg),
             ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
+      body: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        child: FutureBuilder(
+            future: fetchAllSocialMedias,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (allSocialMedias.isEmpty) {
+                return const Center(
+                    child: EmptyData(
+                  text: '尚無貼文',
+                ));
+              }
+              return Column(
                 children: [
-                  ListView.separated(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
-                      return const PostItem();
-                    },
-                    separatorBuilder: (BuildContext context, int index) =>
-                        const SizedBox(height: 0),
+                  Expanded(
+                    child: ListView.separated(
+                      physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics()),
+                      shrinkWrap: true,
+                      itemCount: allSocialMedias.length,
+                      itemBuilder: (context, index) {
+                        return PostItem(
+                          socialMedia: allSocialMedias[index],
+                          editable: false,
+                        );
+                      },
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Divider(
+                          thickness: 0,
+                          color: UiColor.navigationBarColor,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
-              ),
-            ),
-          ),
-        ],
+              );
+            }),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: UiColor.theme2_color,
+        backgroundColor: UiColor.theme2Color,
         shape: const CircleBorder(),
-        onPressed: () {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(
-              builder: (context) => const AddPostPage(),
-            ),
-          );
+        onPressed: () async {
+          if (memberId != null) {
+            Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (context) => AddPostPage(
+                  memberId: memberId,
+                ),
+              ),
+            );
+          }
         },
         child: const Icon(
           Icons.add,

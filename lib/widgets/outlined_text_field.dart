@@ -1,29 +1,31 @@
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class OutlinedTextField extends StatelessWidget {
-  final String labelText;
+class OutlinedTextField extends StatefulWidget {
+  final String? labelText;
   final double labelSize;
   final String? hintText;
   final double hintSize;
-  final TextEditingController? controller;
+  final TextEditingController controller;
+  final TextInputType? keyboardType;
   final bool obscureText;
   final bool readOnly;
   final bool alignLabelWithHint;
   final int? maxLines;
   final Widget? suffixIcon;
 
-  /// 高度:字體高度 + Padding高度*2
+  /// OutlinedTextField高度:字體高度 + Padding高度*2
   final double height;
   final Function()? onTap;
   final FormFieldValidator? validator;
   const OutlinedTextField({
     super.key,
-    this.labelText = 'Label',
+    this.labelText,
     this.labelSize = 16.0,
     this.hintText,
     this.hintSize = 16.0,
-    this.controller,
+    required this.controller,
+    this.keyboardType,
     this.obscureText = false,
     this.readOnly = false,
     this.alignLabelWithHint = false,
@@ -35,55 +37,80 @@ class OutlinedTextField extends StatelessWidget {
   });
 
   @override
+  State<OutlinedTextField> createState() => _OutlinedTextFieldState();
+}
+
+class _OutlinedTextFieldState extends State<OutlinedTextField> {
+  bool _hasError = false;
+  bool _hasValue = false;
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
-      style: const TextStyle(color: UiColor.text1_color),
-      controller: controller,
-      obscureText: obscureText,
-      readOnly: readOnly,
-      onTap: onTap,
-      validator: validator,
-      maxLines: maxLines,
+      style: const TextStyle(color: UiColor.text1Color),
+      controller: widget.controller,
+      keyboardType: widget.keyboardType,
+      obscureText: widget.obscureText,
+      readOnly: widget.readOnly,
+      onTap: widget.onTap,
+      // validator: widget.validator,
+      validator: (value) {
+        final errorText = widget.validator?.call(value);
+        setState(() {
+          _hasError = errorText != null;
+        });
+        // 不使用預設的ErrorText
+        return errorText;
+      },
+      maxLines: widget.maxLines,
+      onChanged: (value) {
+        setState(() {
+          _hasValue = value.isNotEmpty;
+        });
+      },
       decoration: InputDecoration(
-        alignLabelWithHint: alignLabelWithHint,
+        alignLabelWithHint: widget.alignLabelWithHint,
         isDense: true,
         contentPadding:
-            EdgeInsets.symmetric(horizontal: 20.0, vertical: height),
-        labelText: labelText,
+            EdgeInsets.symmetric(horizontal: 20.0, vertical: widget.height),
+        labelText: widget.labelText,
         // floatingLabelBehavior: FloatingLabelBehavior.always,
         labelStyle: TextStyle(
-          color: UiColor.text1_color,
-          fontSize: labelSize,
-          fontWeight: FontWeight.w600,
+          color: _hasError ? UiColor.errorColor : UiColor.text2Color,
+          fontSize: widget.labelSize,
+          fontWeight: FontWeight.w500,
         ),
-        hintText: hintText,
+        hintText: widget.hintText,
         hintStyle: TextStyle(
-          color: UiColor.text1_color,
-          fontSize: hintSize,
+          color: UiColor.text2Color,
+          fontSize: widget.hintSize,
           fontWeight: FontWeight.w500,
         ),
         errorStyle: const TextStyle(
-          color: Color(0xFFDA1414),
+          color: UiColor.errorColor,
           fontSize: 13,
           fontWeight: FontWeight.w400,
         ),
         fillColor: Colors.white,
         filled: true,
-        suffixIcon: suffixIcon,
+        suffixIcon: widget.suffixIcon,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
-          borderSide: const BorderSide(color: UiColor.navigationBar_color),
+          borderSide: BorderSide(
+            width: (widget.controller.text.isNotEmpty || _hasValue) ? 2 : 1,
+            color: UiColor.navigationBarColor,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
-          borderSide: const BorderSide(color: UiColor.text1_color),
+          borderSide: const BorderSide(color: UiColor.text1Color),
         ),
         errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: Color(0xB3DA1414))),
+            borderSide: const BorderSide(color: UiColor.errorColor)),
         focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: Color(0xB3DA1414))),
+            borderSide: const BorderSide(color: UiColor.errorColor)),
       ),
     );
   }

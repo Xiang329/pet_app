@@ -1,8 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:pet_app/models/animal.dart';
+import 'package:pet_app/model/animal.dart';
 import 'package:pet_app/pages/drawer/adoption/adoption_detail.dart';
-import 'package:pet_app/widgets/divider_row.dart';
+import 'package:pet_app/widgets/rich_text_divider.dart';
 
 class AdoptionListItem extends StatefulWidget {
   final Animal animal;
@@ -22,13 +23,13 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
         child: SizedBox(
           height: 120,
           child: Card(
-            color: UiColor.textinput_color,
+            color: UiColor.textinputColor,
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  CupertinoPageRoute(
                     builder: (context) => AdoptionDetailPage(
                       animal: widget.animal,
                     ),
@@ -42,24 +43,22 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    DividerRow(
+                    RichTextDivider(
                       children: [
-                        Text(
-                          widget.animal.animalKind,
-                          overflow: TextOverflow.ellipsis,
+                        TextSpan(
+                          text: widget.animal.animalKind,
                           style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w600,
-                            color: UiColor.text1_color,
+                            color: UiColor.text1Color,
                           ),
                         ),
-                        Text(
-                          widget.animal.animalVariety,
-                          overflow: TextOverflow.ellipsis,
+                        TextSpan(
+                          text: widget.animal.animalVariety,
                           style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w600,
-                            color: UiColor.text1_color,
+                            color: UiColor.text1Color,
                           ),
                         ),
                       ],
@@ -68,7 +67,7 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14.0,
-                        color: UiColor.text2_color,
+                        color: UiColor.text2Color,
                       ),
                       TextSpan(
                         children: [
@@ -91,7 +90,7 @@ class _AdoptionListItemState extends State<AdoptionListItem> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 14.0,
-                        color: UiColor.text2_color,
+                        color: UiColor.text2Color,
                       ),
                       TextSpan(
                         children: [

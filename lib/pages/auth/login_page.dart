@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/utils/validators.dart';
+import 'package:pet_app/widgets/custom_button.dart';
 import 'package:pet_app/widgets/outlined_text_field.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
   bool _isHidden = true;
-  late final bool isError;
 
   @override
   void initState() {
@@ -28,12 +29,40 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
   }
 
+  Future submit() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await Provider.of<AuthModel>(context, listen: false).login(
+          emailController.text,
+          passwordController.text,
+        );
+      } catch (e) {
+        if (!mounted) return;
+        showCupertinoDialog(
+          context: context,
+          builder: (context) {
+            return CupertinoAlertDialog(
+              title: const Text('登入失敗'),
+              content: Text(e.toString()),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text('確定'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    bool isLoading = Provider.of<AuthModel>(context).loading;
-
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -45,19 +74,23 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo圖片
-                  SvgPicture.asset(
-                    AssetsImages.loginLogoSvg,
+                  SizedBox(
+                    height: 180,
+                    width: 180,
+                    child: Image.asset(
+                      AssetsImages.logoPng,
+                      height: 172,
+                      width: 156,
+                    ),
                   ),
-
-                  const SizedBox(height: 52),
+                  const SizedBox(height: 24),
 
                   // --登入表單--
                   // 電子郵件輸入框
                   OutlinedTextField(
                     controller: emailController,
-                    validator: (text) {
-                      return Validators.emailVaildator(text);
-                    },
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (text) => Validators.emailVaildator(text),
                     labelText: '電子郵件',
                     hintText: '電子郵件',
                   ),
@@ -66,10 +99,9 @@ class _LoginPageState extends State<LoginPage> {
                   // 密碼輸入框
                   OutlinedTextField(
                     controller: passwordController,
+                    keyboardType: TextInputType.visiblePassword,
                     obscureText: _isHidden,
-                    validator: (text) {
-                      return Validators.passwordVaildator(text);
-                    },
+                    validator: (text) => Validators.passwordVaildator(text),
                     labelText: '密碼',
                     hintText: '密碼',
                     suffixIcon: Row(
@@ -78,9 +110,11 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         IconButton(
                           padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                          icon: SvgPicture.asset(_isHidden
-                              ? AssetsImages.passwordHideSvg
-                              : AssetsImages.passwordShowSvg),
+                          icon: SvgPicture.asset(
+                            _isHidden
+                                ? AssetsImages.passwordHideSvg
+                                : AssetsImages.passwordShowSvg,
+                          ),
                           onPressed: () {
                             setState(() {
                               _isHidden = !_isHidden;
@@ -97,17 +131,16 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                                context, '/forget_password_page');
-                          },
-                          child: const Text(
-                            '忘記密碼?',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF593922)),
-                          )),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/forget_password_page');
+                        },
+                        child: const Text(
+                          '忘記密碼?',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: UiColor.text1Color),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 25),
@@ -115,78 +148,22 @@ class _LoginPageState extends State<LoginPage> {
                   // 登入按鈕
                   SizedBox(
                     height: 42,
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          backgroundColor: UiColor.theme2_color),
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 25,
-                              width: 25,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              '登入',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                      onPressed: () {
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     margin: EdgeInsets.only(
-                        //       left: MediaQuery.of(context).size.width * 0.2,
-                        //       right: MediaQuery.of(context).size.width * 0.2,
-                        //       bottom: MediaQuery.of(context).size.height * 0.5,
-                        //     ),
-                        //     elevation: 0,
-                        //     duration: const Duration(seconds: 2),
-                        //     behavior: SnackBarBehavior.floating,
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: BorderRadius.circular(8.0),
-                        //     ),
-                        //     backgroundColor: Colors.black.withOpacity(0.5),
-                        //     content: const Center(
-                        //       child: Text(
-                        //         'Please enter valid email',
-                        //       ),
-                        //     ),
-                        //   ),
-                        // );
-                        if (_formKey.currentState!.validate()) {
-                          if (!isLoading) {
-                            Provider.of<AuthModel>(context, listen: false)
-                                .login(
-                              emailController.text,
-                              passwordController.text,
-                            );
-                          }
-                        }
-                      },
-                    ),
+                    child:
+                        CustomButton(asyncOnPressed: submit, buttonText: '登入'),
                   ),
-
                   const SizedBox(height: 24),
 
                   // 註冊
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // 文字
                       const Text(
                         '尚未建立帳號?',
                         style: TextStyle(
-                          fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFFB2A990),
+                          color: UiColor.navigationBarColor,
                         ),
                       ),
-                      // 文字按鈕
                       TextButton(
                         onPressed: () {
                           Navigator.pushNamed(context, '/register_page');
@@ -194,9 +171,8 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text(
                           '註冊',
                           style: TextStyle(
-                            fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF593922),
+                            color: UiColor.text1Color,
                           ),
                         ),
                       ),

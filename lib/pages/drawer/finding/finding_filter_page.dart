@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/common/area_data.dart';
+import 'package:pet_app/services/pet_classes_service.dart';
+import 'package:pet_app/services/pet_varieties_service.dart';
+import 'package:pet_app/widgets/custom_button.dart';
 import 'package:pet_app/widgets/dropdown_list.dart';
 
 class FindingFilterPage extends StatefulWidget {
@@ -12,36 +16,39 @@ class FindingFilterPage extends StatefulWidget {
 }
 
 class _FindingFilterPageState extends State<FindingFilterPage> {
-  List<String> petCategory = [
-    '狗',
-    '貓',
-    '鼠',
-  ];
-  Map<String, List<String>> petBreed = {
-    '狗': ['小狗', '大狗', '狗勾'],
-    '貓': ['小貓', '大貓', '喵喵'],
-    '鼠': ['薯條', '薯餅', '勞薯'],
-  };
+  final petClassesMap = PetClassesService.petClassesMap;
+  final petVarietiesMap = PetVarietiesService.petVarietyMapByPcId;
 
-  List<String> citys = [
-    '台北市',
-    '新北市',
-  ];
-
-  String? selectedPetCategory;
-  String? selectedPetBreed;
+  int? selectedPetClassId;
+  String? selectedPetClass;
+  String? selectedPetVariety;
   String? selectedCitys;
+
+  void submit() {
+    Map<String, String> selectedFilters = {
+      'class': selectedPetClass ?? '',
+      'variety': selectedPetVariety ?? '',
+      'city': selectedCitys ?? '',
+    };
+    selectedFilters.removeWhere((key, value) => value.isEmpty);
+    debugPrint(selectedFilters.toString());
+    Navigator.of(context, rootNavigator: true).pop(selectedFilters);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
-        backgroundColor: UiColor.theme1_color,
+        backgroundColor: UiColor.theme1Color,
         title: const Text('篩選'),
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -52,14 +59,17 @@ class _FindingFilterPageState extends State<FindingFilterPage> {
             children: [
               DropdownList(
                 title: '類別',
-                items: petCategory,
-                value: selectedPetCategory,
+                items: petClassesMap.values.toList(),
+                value: selectedPetClass,
                 onChanged: (String? value) {
                   setState(() {
-                    if (selectedPetCategory != value) {
+                    if (selectedPetClass != value) {
                       // 需清空否則報錯
-                      selectedPetBreed = null;
-                      selectedPetCategory = value;
+                      selectedPetVariety = null;
+                      selectedPetClass = value;
+                      selectedPetClassId = petClassesMap.entries
+                          .firstWhere((entry) => entry.value == value)
+                          .key;
                     }
                   });
                 },
@@ -67,18 +77,18 @@ class _FindingFilterPageState extends State<FindingFilterPage> {
               const SizedBox(height: 25),
               DropdownList(
                 title: '品種',
-                items: petBreed[selectedPetCategory] ?? [],
-                value: selectedPetBreed,
+                items: petVarietiesMap[selectedPetClassId] ?? [],
+                value: selectedPetVariety,
                 onChanged: (String? value) {
                   setState(() {
-                    selectedPetBreed = value;
+                    selectedPetVariety = value;
                   });
                 },
               ),
               const SizedBox(height: 25),
               DropdownList(
                 title: '縣市',
-                items: citys,
+                items: areaData.keys.toList(),
                 value: selectedCitys,
                 onChanged: (String? value) {
                   setState(() {
@@ -89,30 +99,7 @@ class _FindingFilterPageState extends State<FindingFilterPage> {
               const SizedBox(height: 25),
               SizedBox(
                 height: 42,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      backgroundColor: UiColor.theme2_color),
-                  child: const Text(
-                    '確定',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white,
-                    ),
-                  ),
-                  onPressed: () {
-                    List selectedFilters = [
-                      selectedPetCategory,
-                      selectedPetBreed,
-                      selectedCitys
-                    ];
-                    selectedFilters.removeWhere((element) => element == null);
-                    Navigator.of(context, rootNavigator: true)
-                        .pop(selectedFilters);
-                  },
-                ),
+                child: CustomButton(syncOnPressed: submit, buttonText: '確定'),
               ),
             ],
           ),

@@ -1,11 +1,23 @@
+import 'package:flutter/cupertino.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_app/model/pet.dart';
 import 'package:pet_app/pages/drawer/breeding/breeding_detail_page.dart';
-import 'package:pet_app/widgets/divider_row.dart';
+import 'package:pet_app/widgets/rich_text_divider.dart';
 
 class BreedingListItem extends StatefulWidget {
-  const BreedingListItem({super.key});
+  final int breedingId;
+  final int petId;
+  final Pet pet;
+  final bool editable;
+  const BreedingListItem({
+    super.key,
+    required this.editable,
+    required this.petId,
+    required this.breedingId,
+    required this.pet,
+  });
 
   @override
   State<BreedingListItem> createState() => _BreedingListItemState();
@@ -19,68 +31,73 @@ class _BreedingListItemState extends State<BreedingListItem> {
       child: SizedBox(
         height: 120,
         child: Card(
-          color: UiColor.textinput_color,
+          margin: EdgeInsets.zero,
+          color: UiColor.textinputColor,
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const BreedingDetailPage(),
+                CupertinoPageRoute(
+                  builder: (context) => BreedingDetailPage(
+                    editable: widget.editable,
+                    breedingID: widget.breedingId,
+                    petID: widget.petId,
+                  ),
                 ),
               );
             },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundImage: AssetImage(AssetsImages.dogJpg),
+                    backgroundImage: widget.pet.petMugShot.isEmpty
+                        ? const AssetImage(AssetsImages.petAvatorPng)
+                        : MemoryImage(widget.pet.petMugShot),
                   ),
-                  SizedBox(width: 25),
+                  const SizedBox(width: 25),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        DividerRow(
+                        RichTextDivider(
                           children: [
-                            Text(
-                              "狗",
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                            TextSpan(
+                              text: widget.pet.className,
+                              style: const TextStyle(
                                   fontSize: 16.0,
                                   fontWeight: FontWeight.w600,
-                                  color: UiColor.text1_color),
+                                  color: UiColor.text1Color),
                             ),
-                            Text(
-                              "瑪爾濟斯",
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                            TextSpan(
+                              text: widget.pet.varietyName,
+                              style: const TextStyle(
                                   fontSize: 16.0,
                                   fontWeight: FontWeight.w600,
-                                  color: UiColor.text1_color),
+                                  color: UiColor.text1Color),
                             ),
                           ],
                         ),
                         Text.rich(
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14.0,
-                            color: UiColor.text2_color,
+                            color: UiColor.text2Color,
                           ),
                           TextSpan(
                             children: [
-                              TextSpan(
+                              const TextSpan(
                                 text: "性別　",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               TextSpan(
-                                text: "公",
-                                style: TextStyle(
+                                text: widget.pet.petSex ? "男" : "女",
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -89,21 +106,21 @@ class _BreedingListItemState extends State<BreedingListItem> {
                         ),
                         Text.rich(
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14.0,
-                            color: UiColor.text2_color,
+                            color: UiColor.text2Color,
                           ),
                           TextSpan(
                             children: [
-                              TextSpan(
+                              const TextSpan(
                                 text: "年紀　",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               TextSpan(
-                                text: "5歲",
-                                style: TextStyle(
+                                text: '${widget.pet.petAge} 歲',
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

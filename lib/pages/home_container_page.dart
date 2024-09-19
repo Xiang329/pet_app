@@ -7,14 +7,16 @@ import 'package:pet_app/pages/drawer/finding/finding_page.dart';
 import 'package:pet_app/pages/drawer/pet_knowledge/pet_knowledge_page.dart';
 import 'package:pet_app/pages/home/widgets/dialog/add_pet_dialog.dart';
 import 'package:pet_app/pages/home/widgets/dialog/invite_code_dialog.dart';
-import 'package:pet_app/pages/my/account_page.dart';
+import 'package:pet_app/pages/my/profile_page.dart';
 import 'package:pet_app/pages/home/home_page.dart';
 import 'package:pet_app/pages/search/search_place_page.dart';
 import 'package:pet_app/pages/socail/socail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pet_app/providers/member_provider.dart';
+import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/routes/app_routes.dart';
+import 'package:pet_app/services/pet_classes_service.dart';
+import 'package:pet_app/services/pet_varieties_service.dart';
 import 'package:provider/provider.dart';
 
 class HomeContainerPage extends StatefulWidget {
@@ -29,24 +31,52 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
     const HomePage(),
     const SearchPlacePage(),
     const SocialPage(),
-    const AccountPage(),
+    const ProfilePage(),
   ];
 
-  int currentIndex = 0;
+  int currentIndex = 1;
+
+  @override
+  void initState() {
+    _initializeServices();
+    super.initState();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      Provider.of<AppProvider>(context, listen: false).initialize();
+      await Future.wait([
+        PetVarietiesService.getPetVarieties(),
+        PetClassesService.getPetClasses(),
+      ]);
+    } catch (e) {
+      debugPrint('初始化服務錯誤: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final memberProvider = Provider.of<MemberProvider>(context);
+    final member = Provider.of<AppProvider>(context).member;
 
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       body: IndexedStack(index: currentIndex, children: pages),
       // extendBody: true,
       appBar: currentIndex != 0
           ? null
           : AppBar(
-              backgroundColor: UiColor.theme2_color,
+              backgroundColor: UiColor.theme2Color,
               title: const Text("主頁"),
+              leading: Builder(builder: (context) {
+                return SizedBox(
+                  height: kToolbarHeight,
+                  width: kToolbarHeight,
+                  child: IconButton(
+                    icon: SvgPicture.asset(AssetsImages.menuSvg),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                );
+              }),
               actions: <Widget>[
                 SizedBox(
                   height: kToolbarHeight,
@@ -54,7 +84,7 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
                   child: IconButton(
                     icon: const Icon(
                       Icons.add,
-                      color: UiColor.text1_color,
+                      color: UiColor.text1Color,
                     ),
                     onPressed: () async {
                       int? result = await showDialog(
@@ -116,32 +146,45 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
               ],
             ),
       drawer: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.6,
+        width: MediaQuery.of(context).size.width * 0.55,
         child: Drawer(
-          backgroundColor: UiColor.theme2_color,
+          backgroundColor: UiColor.theme2Color,
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
               SizedBox(
-                height: 200,
+                height: 250,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const CircleAvatar(
-                      radius: 40,
-                      backgroundImage: AssetImage(AssetsImages.hamsterJpg),
+                    ClipOval(
+                      child: (member == null)
+                          ? Image.asset(
+                              AssetsImages.userAvatorPng,
+                              width: 40 * 2,
+                              height: 40 * 2,
+                            )
+                          : member.memberMugShot.isEmpty
+                              ? Image.asset(
+                                  AssetsImages.userAvatorPng,
+                                  width: 40 * 2,
+                                  height: 40 * 2,
+                                )
+                              : Image.memory(
+                                  member.memberMugShot,
+                                  width: 40 * 2,
+                                  height: 40 * 2,
+                                ),
                     ),
                     const SizedBox(height: 10),
-                    memberProvider.isLoading
-                        ? const CircularProgressIndicator()
-                        : Text(
-                            memberProvider.member!.memberName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: UiColor.text1_color,
-                            ),
-                          ),
+                    Text(
+                      (member == null) ? '' : member.memberName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: UiColor.text1Color,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -150,14 +193,14 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
                 titleTextStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: UiColor.text1_color,
+                  color: UiColor.text1Color,
                 ),
-                trailing: const Icon(Icons.keyboard_arrow_right),
+                trailing: SvgPicture.asset(AssetsImages.arrowEnterSvg),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.push<void>(
                     context,
-                    MaterialPageRoute<void>(
+                    CupertinoPageRoute<void>(
                       builder: (BuildContext context) =>
                           const PetKnowledgePage(),
                     ),
@@ -169,14 +212,14 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
                 titleTextStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: UiColor.text1_color,
+                  color: UiColor.text1Color,
                 ),
-                trailing: const Icon(Icons.keyboard_arrow_right),
+                trailing: SvgPicture.asset(AssetsImages.arrowEnterSvg),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.push<void>(
                     context,
-                    MaterialPageRoute<void>(
+                    CupertinoPageRoute<void>(
                       builder: (BuildContext context) => const AdoptionPage(),
                     ),
                   );
@@ -187,14 +230,14 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
                 titleTextStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: UiColor.text1_color,
+                  color: UiColor.text1Color,
                 ),
-                trailing: const Icon(Icons.keyboard_arrow_right),
+                trailing: SvgPicture.asset(AssetsImages.arrowEnterSvg),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.push<void>(
                     context,
-                    MaterialPageRoute<void>(
+                    CupertinoPageRoute<void>(
                       builder: (BuildContext context) => const BreedingPage(),
                     ),
                   );
@@ -205,14 +248,14 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
                 titleTextStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: UiColor.text1_color,
+                  color: UiColor.text1Color,
                 ),
-                trailing: const Icon(Icons.keyboard_arrow_right),
+                trailing: SvgPicture.asset(AssetsImages.arrowEnterSvg),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.push<void>(
                     context,
-                    MaterialPageRoute<void>(
+                    CupertinoPageRoute<void>(
                       builder: (BuildContext context) => const FindPage(),
                     ),
                   );
@@ -235,9 +278,9 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
             });
           },
           type: BottomNavigationBarType.fixed, // 顏色覆蓋
-          backgroundColor: UiColor.theme2_color,
-          selectedItemColor: UiColor.text1_color,
-          unselectedItemColor: UiColor.line_color,
+          backgroundColor: UiColor.theme2Color,
+          selectedItemColor: UiColor.text1Color,
+          unselectedItemColor: UiColor.lineColor,
           items: [
             BottomNavigationBarItem(
               icon: SvgPicture.asset(AssetsImages.homeSvg),
@@ -245,9 +288,9 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
               label: "主頁",
             ),
             BottomNavigationBarItem(
-              icon: SvgPicture.asset(AssetsImages.searchSvg),
-              activeIcon: SvgPicture.asset(AssetsImages.searchSeletedSvg),
-              label: "搜尋",
+              icon: SvgPicture.asset(AssetsImages.findPlaceSvg),
+              activeIcon: SvgPicture.asset(AssetsImages.findPlaceSeletedSvg),
+              label: "找店家",
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(AssetsImages.socialSvg),

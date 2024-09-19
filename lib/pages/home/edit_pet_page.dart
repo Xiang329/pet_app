@@ -1,13 +1,20 @@
-import 'package:pet_app/common/apiMethods.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
-import 'package:pet_app/models/member.dart';
-import 'package:pet_app/providers/member_provider.dart';
-import 'package:pet_app/widgets/filled_text_field.dart';
+import 'package:pet_app/model/pet.dart';
+import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/services/pet_classes_service.dart';
+import 'package:pet_app/services/pet_varieties_service.dart';
+import 'package:pet_app/utils/date_format_extension.dart';
+import 'package:pet_app/utils/image_utils.dart';
+import 'package:pet_app/utils/validators.dart';
+import 'package:pet_app/widgets/custom_button.dart';
+import 'package:pet_app/widgets/filled_left_label_text_field.dart';
+import 'package:pet_app/widgets/left_label_dropdown_list.dart';
 import 'package:provider/provider.dart';
 
 class EditPetPage extends StatefulWidget {
@@ -19,38 +26,128 @@ class EditPetPage extends StatefulWidget {
 }
 
 class _EditPetPageState extends State<EditPetPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey();
   TextEditingController petNameController = TextEditingController();
   TextEditingController ageController = TextEditingController();
-  TextEditingController classNameController = TextEditingController();
-  TextEditingController varietyNameController = TextEditingController();
+  // TextEditingController classNameController = TextEditingController();
+  // TextEditingController varietyNameController = TextEditingController();
   TextEditingController birthDayController = TextEditingController();
-  TextEditingController sexController = TextEditingController();
+  // TextEditingController sexController = TextEditingController();
   TextEditingController weightController = TextEditingController();
-  TextEditingController ligationController = TextEditingController();
+  // TextEditingController ligationController = TextEditingController();
   TextEditingController bloodController = TextEditingController();
   DateTime _datetime = DateTime.now();
+  Uint8List? picture;
+
+  final petClassesMap = PetClassesService.petClassesMap;
+  final petVarietiesMap = PetVarietiesService.petVarietyMap;
+  final petVarietyMapByPcId = PetVarietiesService.petVarietyMapByPcId;
+
+  final List<String> petGender = [
+    '男',
+    '女',
+  ];
+
+  int? selectedPetClassId;
+  int? selectedPetVarietyId;
+  String? selectedPetClass;
+  String? selectedPetVariety;
+  String? selectedPetSex;
+  String? selectedLigation;
+
+  @override
+  void initState() {
+    super.initState();
+    petNameController.text = widget.pet.petName;
+    ageController.text = widget.pet.petAge.toString();
+    birthDayController.text = widget.pet.petBirthDay.formatDate();
+    _datetime = widget.pet.petBirthDay!;
+    // classNameController.text = widget.pet.className;
+    // varietyNameController.text = widget.pet.varietyName;
+    // sexController.text = widget.pet.petSex ? "男" : "女";
+    weightController.text = widget.pet.petWeight.toString();
+    // ligationController.text = widget.pet.petLigation ? "是" : "否";
+    bloodController.text = widget.pet.petBlood;
+    picture = widget.pet.petMugShot;
+
+    selectedPetClassId = petClassesMap.entries
+        .firstWhereOrNull((element) => element.value == widget.pet.className)
+        ?.key;
+    selectedPetVarietyId = petVarietiesMap.entries
+        .firstWhereOrNull(
+            (element) => element.value.pvVarietyName == widget.pet.varietyName)
+        ?.key;
+    selectedPetClass = petClassesMap.values
+        .firstWhereOrNull((value) => value.contains(widget.pet.className));
+    selectedPetVariety = petVarietiesMap.values
+        .firstWhereOrNull(
+            (value) => value.pvVarietyName.contains(widget.pet.varietyName))
+        ?.pvVarietyName;
+    selectedPetSex = petGender.firstWhereOrNull(
+        (value) => value.contains(widget.pet.petSex ? '男' : '女'));
+
+    selectedLigation = widget.pet.petLigation ? '是' : '否';
+  }
+
+  Future submit() async {
+    final petData = {
+      "Pet_ID": widget.pet.petId,
+      "Pet_ICID": widget.pet.petICID,
+      "Pet_Name": petNameController.text,
+      "Pet_BirthDay": _datetime.toIso8601String(),
+      "Pet_Age": ageController.text,
+      "Pet_Sex": selectedPetSex == '男',
+      "Pet_Variety": selectedPetVarietyId,
+      "Pet_Weight": weightController.text,
+      "Pet_Ligation": selectedLigation == '是',
+      "Pet_Blood": bloodController.text,
+      "Pet_MugShot": picture,
+      "Pet_InvCode": widget.pet.petInvCode,
+    };
+    // debugPrint(Map.from(petData).remove('Pet_MugShot'));
+    try {
+      if (_formKey.currentState!.validate()) {
+        await Provider.of<AppProvider>(context, listen: false)
+            .editPet(widget.pet.petId, petData);
+        if (!mounted) return;
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('錯誤'),
+            content: Text(e.toString()),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text('確定'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    petNameController.text = widget.pet.name;
-    ageController.text = widget.pet.age.toString();
-    birthDayController.text = DateFormat('yyyy/MM/dd').format(widget.pet.birthDay);
-    _datetime = widget.pet.birthDay;
-    classNameController.text = widget.pet.className;
-    varietyNameController.text = widget.pet.varietyName;
-    sexController.text = widget.pet.sex ? "男" : "女";
-    weightController.text = widget.pet.weight.toString();
-    ligationController.text = widget.pet.ligation ? "是" : "否";
-    bloodController.text = widget.pet.blood;
-
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
-        backgroundColor: UiColor.theme1_color,
+        backgroundColor: UiColor.theme1Color,
         title: const Text("寵物檔案"),
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -63,12 +160,11 @@ class _EditPetPageState extends State<EditPetPage> {
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 56,
-                      child: CircleAvatar(
-                        radius: 56,
-                        backgroundImage: AssetImage(AssetsImages.catJpg),
-                      ),
+                      backgroundImage: (picture == null)
+                          ? const AssetImage(AssetsImages.petAvatorPng)
+                          : MemoryImage(picture!),
                     ),
                     Positioned(
                       bottom: 0,
@@ -77,9 +173,16 @@ class _EditPetPageState extends State<EditPetPage> {
                         radius: 18,
                         backgroundColor: Colors.white,
                         child: IconButton(
-                          color: UiColor.theme2_color,
+                          color: UiColor.theme2Color,
                           padding: EdgeInsets.zero,
-                          onPressed: () {},
+                          onPressed: () async {
+                            await ImageUtils.pickImage().then((img) {
+                              if (img != null) {
+                                picture = img;
+                                setState(() {});
+                              }
+                            });
+                          },
                           icon: const Icon(Icons.add),
                         ),
                       ),
@@ -90,132 +193,162 @@ class _EditPetPageState extends State<EditPetPage> {
             ),
             const SizedBox(height: 40),
             Card(
-              color: UiColor.theme1_color,
+              color: UiColor.theme1Color,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0)),
               clipBehavior: Clip.hardEdge,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  FilledTextField(
-                    labelText: '名稱',
-                    hintText: 'Pudding',
-                    controller: petNameController,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    labelText: '類別',
-                    hintText: '狗',
-                    controller: classNameController,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    labelText: '品種',
-                    hintText: '馬爾濟思',
-                    controller: varietyNameController,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    labelText: '年紀',
-                    hintText: '5歲',
-                    controller: ageController,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    readOnly: true,
-                    controller: birthDayController,
-                    labelText: '生日',
-                    onTap: () {
-                      showModalBottomSheet(
-                        clipBehavior: Clip.antiAlias,
-                        context: context,
-                        builder: (BuildContext context) {
-                          return Container(
-                            height: 300,
-                            color: UiColor.theme1_color,
-                            child: CupertinoDatePicker(
-                              initialDateTime: _datetime,
-                              mode: CupertinoDatePickerMode.date,
-                              onDateTimeChanged: (datetime) {
-                                setState(() {
-                                  _datetime = datetime;
-                                  birthDayController.text = DateFormat('yyyy/MM/dd')
-                                      .format(datetime)
-                                      .toString();
-                                });
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    labelText: '體重',
-                    hintText: '5公斤',
-                    controller: weightController,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    labelText: '性別',
-                    hintText: '公',
-                    controller: sexController,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    labelText: '是否結紮',
-                    hintText: '是',
-                    controller: ligationController,
-                  ),
-                  const SizedBox(height: 10),
-                  FilledTextField(
-                    labelText: '血型',
-                    hintText: 'DEA1(+)',
-                    controller: bloodController,
-                  ),
-                ],
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FilledLeftLabelTextField(
+                      validator: (value) => Validators.stringValidator(
+                        value,
+                        errorMessage: '名稱',
+                      ),
+                      labelText: '名稱',
+                      controller: petNameController,
+                    ),
+                    const SizedBox(height: 10),
+                    LeftLabelDropdownList(
+                      validator: (value) => Validators.dropDownListValidator(
+                        value,
+                        errorMessage: '類別',
+                      ),
+                      title: '類別',
+                      items: petClassesMap.values.toList(),
+                      value: selectedPetClass,
+                      topLeftRadius: 8,
+                      topRightRadius: 8,
+                      onChanged: (value) {
+                        selectedPetClassId = petClassesMap.entries
+                            .firstWhereOrNull(
+                                (element) => element.value == value)
+                            ?.key;
+                        setState(() {
+                          selectedPetClass = value;
+                          selectedPetVariety = null;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    LeftLabelDropdownList(
+                      validator: (value) => Validators.dropDownListValidator(
+                        value,
+                        errorMessage: '品種',
+                      ),
+                      title: '品種',
+                      items: petVarietyMapByPcId[selectedPetClassId] ?? [],
+                      value: selectedPetVariety,
+                      onChanged: (value) {
+                        selectedPetVarietyId = petVarietiesMap.entries
+                            .firstWhereOrNull((element) =>
+                                element.value.pvVarietyName == value)
+                            ?.key;
+                        setState(() {
+                          selectedPetVariety = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    FilledLeftLabelTextField(
+                      validator: (value) => Validators.stringValidator(
+                        value,
+                        errorMessage: '年紀',
+                        onlyInt: true,
+                      ),
+                      labelText: '年紀',
+                      controller: ageController,
+                    ),
+                    const SizedBox(height: 10),
+                    FilledLeftLabelTextField(
+                      readOnly: true,
+                      controller: birthDayController,
+                      validator: (value) => Validators.stringValidator(value),
+                      labelText: '生日',
+                      onTap: () {
+                        showModalBottomSheet(
+                          clipBehavior: Clip.antiAlias,
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Container(
+                              height: 300,
+                              color: UiColor.theme1Color,
+                              child: CupertinoDatePicker(
+                                initialDateTime: _datetime,
+                                mode: CupertinoDatePickerMode.date,
+                                onDateTimeChanged: (datetime) {
+                                  setState(() {
+                                    _datetime = datetime;
+                                    birthDayController.text =
+                                        datetime.formatDate();
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    FilledLeftLabelTextField(
+                      validator: (value) => Validators.stringValidator(
+                        value,
+                        errorMessage: '體重',
+                        onlyInt: true,
+                      ),
+                      labelText: '體重',
+                      controller: weightController,
+                    ),
+                    const SizedBox(height: 10),
+                    LeftLabelDropdownList(
+                      validator: (value) => Validators.dropDownListValidator(
+                        value,
+                        errorMessage: '性別',
+                      ),
+                      title: '性別',
+                      items: petGender,
+                      value: selectedPetSex,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedPetSex = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    LeftLabelDropdownList(
+                      validator: (value) => Validators.dropDownListValidator(
+                        value,
+                        errorMessage: '是否結紮',
+                      ),
+                      title: '是否結紮',
+                      items: const ['是', '否'],
+                      value: selectedLigation,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedLigation = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    FilledLeftLabelTextField(
+                      validator: (value) => Validators.stringValidator(
+                        value,
+                        errorMessage: '血型',
+                      ),
+                      labelText: '血型',
+                      controller: bloodController,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 40),
             SizedBox(
               height: 42,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    backgroundColor: UiColor.theme2_color),
-                child: const Text(
-                  '完成',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                onPressed: () async {
-                  final petData = {
-                    "Pet_ID": widget.pet.id,
-                    "Pet_ICID": widget.pet.icid,
-                    "Pet_Name": petNameController.text,
-                    "Pet_BirthDay": birthDayController.text,
-                    "Pet_Age": ageController.text,
-                    "Pet_Sex": widget.pet.sex,
-                    "Pet_Variety": widget.pet.variety,
-                    "Pet_Weight": weightController.text,
-                    "Pet_Ligation": widget.pet.ligation,
-                    "Pet_Blood": bloodController.text,
-                    "Pet_MugShot": widget.pet.mugShot,
-                    "Pet_InvCode": widget.pet.invCode,
-                  };
-                  print(petData);
-                  await ApiMethod().putMethod('Pets', widget.pet.id, petData);
-                  await Provider.of<MemberProvider>(context, listen: false)
-                      .updateMember();
-                  Navigator.of(context, rootNavigator: true).pop();
-                },
-              ),
+              child: CustomButton(asyncOnPressed: submit, buttonText: '完成'),
             ),
             const SizedBox(height: 30),
           ],

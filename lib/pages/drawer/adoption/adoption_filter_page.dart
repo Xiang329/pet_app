@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/widgets/custom_button.dart';
 import 'package:pet_app/widgets/dropdown_list.dart';
 
 class AdoptionFilterPage extends StatefulWidget {
@@ -15,9 +16,9 @@ class _AdoptionFilterPageState extends State<AdoptionFilterPage> {
   final List<String> petCategory = [
     '狗',
     '貓',
-    '鼠',
   ];
-  Map<String, List<String>> petBreed = {
+
+  final Map<String, List<String>> petBreed = {
     "狗": [
       "混種犬",
       "拉不拉多貴賓犬",
@@ -263,66 +264,81 @@ class _AdoptionFilterPageState extends State<AdoptionFilterPage> {
       "狸花貓",
       "新加坡貓(獅城貓)"
     ],
-    "鼠": ["薯條", "薯餅", "勞薯"],
   };
 
-  final List<String> shelter = [
-    "新北市政府動物保護防疫處",
-    "新北市新店區公立動物之家",
-    "新北市板橋區公立動物之家",
-    "新北市中和區公立動物之家",
-    "新北市淡水區公立動物之家",
-    "新北市瑞芳區公立動物之家",
-    "新北市五股區公立動物之家",
-    "新北市八里區公立動物之家",
-    "新北市三芝區公立動物之家",
-    "宜蘭縣流浪動物中途之家",
-    "桃園市動物保護教育園區",
-    "新竹縣動物保護教育園區",
-    "苗栗縣動物保護教育園區",
-    "臺中市動物之家南屯園區",
-    "臺中市動物之家后里園區",
-    "彰化縣流浪狗中途之家",
-    "南投縣公立動物收容所",
-    "雲林縣流浪動物收容所",
-    "嘉義縣動物保護教育園區",
-    "高雄市壽山動物保護教育園區",
-    "高雄市燕巢動物保護關愛園區",
-    "屏東縣公立犬貓中途之家",
-    "屏東縣動物之家",
-    "臺東縣動物收容中心",
-    "花蓮縣狗貓躍動園區",
-    "澎湖縣流浪動物收容中心",
-    "基隆市寵物銀行",
-    "新竹市動物保護教育園區",
-    "嘉義市動物保護教育園區",
-    "臺南市動物之家灣裡站",
-    "臺南市動物之家善化站",
-    "臺北市動物之家",
-    "連江縣流浪犬收容中心",
-    "金門縣動物收容中心"
+  final List<String> animalShelters = [
+    '基隆市寵物銀行',
+    '臺北市動物之家',
+    '新北市板橋區公立動物之家',
+    '新北市新店區公立動物之家',
+    '新北市中和區公立動物之家',
+    '新北市淡水區公立動物之家',
+    '新北市瑞芳區公立動物之家',
+    '新北市五股區公立動物之家',
+    '新北市八里區公立動物之家',
+    '新北市三芝區公立動物之家',
+    '桃園市動物保護教育園區',
+    '新竹市動物收容所',
+    '新竹縣動物收容所',
+    '臺中市動物之家南屯園區',
+    '臺中市動物之家后里園區',
+    '彰化縣流浪狗中途之家',
+    '南投縣公立動物收容所',
+    '嘉義市流浪犬收容中心',
+    '嘉義縣流浪犬中途之家',
+    '臺南市動物之家灣裡站',
+    '臺南市動物之家善化站',
+    '高雄市壽山動物保護教育園區',
+    '高雄市燕巢動物保護關愛園區',
+    '屏東縣流浪動物收容所',
+    '宜蘭縣流浪動物中途之家',
+    '花蓮縣流浪犬中途之家',
+    '臺東縣動物收容中心',
+    '連江縣流浪犬收容中心',
+    '金門縣動物收容中心',
+    '澎湖縣流浪動物收容中心',
+    '雲林縣流浪動物收容所',
+    '新北市政府動物保護防疫處',
+    '苗栗縣生態保育教育中心',
   ];
 
-  final List<String> petGender = [
+  final List<String> animalSex = [
     '公',
     '母',
+    '未輸入',
   ];
 
   String? selectedPetCategory;
   String? selectedPetBreed;
   String? selectedShelter;
-  String? selectedPetGender;
+  String? selectedSex;
+
+  void submit() {
+    Map<String, String> selectedFilters = {
+      'kind': selectedPetCategory ?? '',
+      'variety': selectedPetBreed ?? '',
+      'shelter': selectedShelter ?? '',
+      'sex': selectedSex ?? '',
+    };
+    selectedFilters.removeWhere((key, value) => value.isEmpty);
+    print(selectedFilters);
+    Navigator.of(context, rootNavigator: true).pop(selectedFilters);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
-        backgroundColor: UiColor.theme1_color,
+        backgroundColor: UiColor.theme1Color,
         title: const Text("篩選"),
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -360,7 +376,7 @@ class _AdoptionFilterPageState extends State<AdoptionFilterPage> {
               const SizedBox(height: 25),
               DropdownList(
                 title: "收容所",
-                items: shelter,
+                items: animalShelters,
                 value: selectedShelter,
                 onChanged: (String? value) {
                   setState(() {
@@ -371,43 +387,18 @@ class _AdoptionFilterPageState extends State<AdoptionFilterPage> {
               const SizedBox(height: 25),
               DropdownList(
                 title: "性別",
-                items: petGender,
-                value: selectedPetGender,
+                items: animalSex,
+                value: selectedSex,
                 onChanged: (String? value) {
                   setState(() {
-                    selectedPetGender = value;
+                    selectedSex = value;
                   });
                 },
               ),
               const SizedBox(height: 25),
               SizedBox(
                 height: 42,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      backgroundColor: UiColor.theme2_color),
-                  child: const Text(
-                    '確定',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white,
-                    ),
-                  ),
-                  onPressed: () {
-                    Map<String, String> selectedFilters = {
-                      'kind': selectedPetCategory ?? '',
-                      'variety': selectedPetBreed ?? '',
-                      'shelter': selectedShelter ?? '',
-                      'sex': selectedPetGender ?? '',
-                    };
-                    selectedFilters.removeWhere((key, value) => value.isEmpty);
-                    print(selectedFilters);
-                    Navigator.of(context, rootNavigator: true)
-                        .pop(selectedFilters);
-                  },
-                ),
+                child: CustomButton(syncOnPressed: submit, buttonText: '確定'),
               ),
             ],
           ),

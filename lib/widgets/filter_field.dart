@@ -1,11 +1,16 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 
 class FilterField extends StatefulWidget {
   final Widget filterPage;
   final EdgeInsetsGeometry? margin;
+  /// Appbar 專用
   final bool useHorizontalScroll;
+
+  /// 根據篩選列數調整彈窗高度比例
+  final int maxHeight;
   final Function(Map<String, String>)? onFilterApplied;
   const FilterField({
     super.key,
@@ -13,40 +18,66 @@ class FilterField extends StatefulWidget {
     this.margin = const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
     this.useHorizontalScroll = false,
     this.onFilterApplied,
+    this.maxHeight = 4,
   });
 
   @override
-  State<FilterField> createState() => _FilterFieldState();
+  State<FilterField> createState() => FilterFieldState();
 }
 
-class _FilterFieldState extends State<FilterField> {
-  // List<String> selectedFilters = [];
-  List selectedFilters = [];
+class FilterFieldState extends State<FilterField> {
+  List<String> selectedFilters = [];
+  // List selectedFilters = [];
   Map<String, String> selectedMap = {};
 
-  void _openFilterDialog() async {
-    final selectedFilter = showModalBottomSheet(
+  double _getHeight(int value) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double maxAllowedHeight = screenHeight * .65;
+    int setValue = value;
+    // 四個級距高度
+    Map<int, double> heightOptions = {
+      // Body佔用高+AppBar高
+      1: 155 + 56,
+      2: 228 + 56,
+      3: 301 + 56,
+      4: 374 + 56,
+    };
+
+    double height = heightOptions[value]!;
+
+    // 限制高度不超過容許比例
+    while ((height > maxAllowedHeight)) {
+      setValue -= 1;
+      height = heightOptions[setValue]!;
+      if ((setValue == 1)) break;
+    }
+    return height;
+  }
+
+  void _openFilterDialog() {
+    final Future selectedFilter = showModalBottomSheet(
       clipBehavior: Clip.antiAliasWithSaveLayer,
       useRootNavigator: true,
       isScrollControlled: true,
       context: context,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.70,
-      ),
+      constraints: BoxConstraints(maxHeight: _getHeight(widget.maxHeight)),
       builder: (BuildContext context) {
-        return Navigator(
-          onGenerateRoute: (settings) {
-            return CupertinoPageRoute(
-                builder: (context) => widget.filterPage, settings: settings);
-          },
-        );
+        return widget.filterPage;
       },
+      // builder: (BuildContext context) {
+      //   return Navigator(
+      //     onGenerateRoute: (settings) {
+      //       return CupertinoPageRoute(
+      //           builder: (context) => widget.filterPage, settings: settings);
+      //     },
+      //   );
+      // },
     );
     // 新增 Filter
     selectedFilter.then((value) {
-      selectedFilters = [];
-      if (value != null) {
+      if (value != null && value.isNotEmpty) {
         setState(() {
+          selectedFilters = [];
           selectedMap = value;
           widget.onFilterApplied!(selectedMap);
           selectedFilters.addAll(selectedMap.values.toList());
@@ -64,6 +95,14 @@ class _FilterFieldState extends State<FilterField> {
     });
   }
 
+  void clearFilters() {
+    setState(() {
+      selectedFilters.clear();
+      selectedMap.clear();
+      widget.onFilterApplied!({});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -73,14 +112,28 @@ class _FilterFieldState extends State<FilterField> {
         margin: widget.margin,
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
         decoration: BoxDecoration(
-          color: UiColor.textinput_color,
+          color: UiColor.textinputColor,
           borderRadius: BorderRadius.circular(30),
         ),
         child: IntrinsicHeight(
           child: Row(
             children: <Widget>[
-              const Icon(Icons.filter_list),
-              const VerticalDivider(),
+              SvgPicture.asset(AssetsImages.filterSvg),
+              const VerticalDivider(
+                width: 20,
+                color: UiColor.text1Color,
+              ),
+              Visibility(
+                visible: selectedFilters.isEmpty,
+                child: const Text(
+                  '篩選',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: UiColor.text1Color,
+                  ),
+                ),
+              ),
               Expanded(
                 child: widget.useHorizontalScroll
                     ? ListView.separated(
@@ -106,12 +159,12 @@ class _FilterFieldState extends State<FilterField> {
                         ),
                       ),
 
-                // 默認元件 Chip 限制多 不同平台尺寸不一
+                // 棄用，默認元件 Chip 限制多 不同平台尺寸不一
                 // children: List.generate(
                 //   selectedFilters.length,
                 //   (index) => Chip(
                 //     side: BorderSide.none,
-                //     backgroundColor: UiColor.theme2_color,
+                //     backgroundColor: UiColor.theme2Color,
                 //     // padding: EdgeInsets.zero,
                 //     // labelPadding: const EdgeInsets.fromLTRB(10, -3, 0, -3),
                 //     shape: const RoundedRectangleBorder(
@@ -119,9 +172,9 @@ class _FilterFieldState extends State<FilterField> {
                 //     label: Text(selectedFilters[index]),
                 //     labelStyle: const TextStyle(
                 //       fontWeight: FontWeight.w600,
-                //       color: UiColor.textinput_color,
+                //       color: UiColor.textinputColor,
                 //     ),
-                //     deleteIconColor: UiColor.textinput_color,
+                //     deleteIconColor: UiColor.textinputColor,
                 //     onDeleted: () => _removeFilter(index),
                 //   ),
                 // ),
@@ -151,7 +204,7 @@ class CustomChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
       decoration: BoxDecoration(
-        color: UiColor.theme2_color,
+        color: UiColor.theme2Color,
         borderRadius: BorderRadius.circular(hight),
       ),
       height: hight,
@@ -164,7 +217,7 @@ class CustomChip extends StatelessWidget {
               // 需強制固定大小
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: UiColor.textinput_color,
+              color: UiColor.textinputColor,
             ),
           ),
           IconButton(
@@ -175,7 +228,7 @@ class CustomChip extends StatelessWidget {
             onPressed: onDeleted,
             icon: const Icon(
               Icons.cancel,
-              color: UiColor.textinput_color,
+              color: UiColor.textinputColor,
               size: 18.0,
             ),
           ),

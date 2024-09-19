@@ -1,13 +1,20 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/models/hospital.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_app/model/place.dart';
 import 'package:pet_app/pages/search/place_detail.dart';
+import 'package:pet_app/utils/launcher_utils.dart';
 
 class HospitalItem extends StatefulWidget {
-  final Hospital hospital;
-  const HospitalItem({super.key, required this.hospital});
+  final Place hospital;
+  final int tabIndex;
+  const HospitalItem({
+    super.key,
+    required this.hospital,
+    required this.tabIndex,
+  });
 
   @override
   State<HospitalItem> createState() => _HospitalItemState();
@@ -19,15 +26,17 @@ class _HospitalItemState extends State<HospitalItem> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: Card(
-        color: UiColor.textinput_color,
+        color: UiColor.textinputColor,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (BuildContext context) =>
-                    PlaceDetailPage(hospital: widget.hospital),
+              CupertinoPageRoute(
+                builder: (BuildContext context) => PlaceDetailPage(
+                  place: widget.hospital,
+                  tabIndex: widget.tabIndex,
+                ),
               ),
             );
           },
@@ -39,48 +48,59 @@ class _HospitalItemState extends State<HospitalItem> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      widget.hospital.name,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        color: UiColor.text1_color,
+                    Flexible(
+                      child: Text(
+                        widget.hospital.displayName.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: UiColor.text1Color,
+                        ),
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // LauncherUtils.openMap(
+                        //   widget.hospital.location.latitude,
+                        //   widget.hospital.location.longitude,
+                        // );
+                        LauncherUtils.openUrl(widget.hospital.googleMapsUri);
+                      },
                       icon: SvgPicture.asset(AssetsImages.mapSvg),
                     )
                   ],
                 ),
                 Text(
-                  widget.hospital.address,
+                  widget.hospital.formattedAddress,
                   style: const TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.bold,
-                    color: UiColor.text2_color,
+                    color: UiColor.text2Color,
                   ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      widget.hospital.phone,
+                      widget.hospital.nationalPhoneNumber,
                       style: const TextStyle(
                         fontSize: 14.0,
                         fontWeight: FontWeight.bold,
-                        color: UiColor.text2_color,
+                        color: UiColor.text2Color,
                       ),
                     ),
                     Row(
                       children: [
-                        SvgPicture.asset(AssetsImages.starSvg),
+                        if (widget.hospital.rating != null)
+                          SvgPicture.asset(AssetsImages.starSvg),
                         Text(
-                          ' ${widget.hospital.star.toStringAsFixed(1)} ',
+                          ' ${widget.hospital.rating!.toStringAsFixed(1)} ',
                           style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
-                            color: UiColor.theme2_color,
+                            color: UiColor.theme2Color,
                           ),
                         ),
                       ],

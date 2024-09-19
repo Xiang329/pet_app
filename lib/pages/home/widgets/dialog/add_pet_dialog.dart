@@ -41,7 +41,7 @@ class _AddPetDialogState extends State<AddPetDialog> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: UiColor.text1_color,
+                      color: UiColor.text1Color,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -56,13 +56,14 @@ class _AddPetDialogState extends State<AddPetDialog> {
                                   horizontalTitleGap: 0),
                             ),
                             child: RadioListTile(
+                              activeColor: UiColor.text1Color,
                               contentPadding: EdgeInsets.zero,
                               title: const Text(
                                 "新增寵物",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
-                                  color: UiColor.text2_color,
+                                  color: UiColor.text1Color,
                                 ),
                               ),
                               value: 1,
@@ -83,13 +84,14 @@ class _AddPetDialogState extends State<AddPetDialog> {
                                   horizontalTitleGap: 0),
                             ),
                             child: RadioListTile(
+                              activeColor: UiColor.text1Color,
                               contentPadding: EdgeInsets.zero,
                               title: const Text(
                                 "加入現有寵物",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
-                                  color: UiColor.text2_color,
+                                  color: UiColor.text1Color,
                                 ),
                               ),
                               value: 2,
@@ -119,14 +121,14 @@ class _AddPetDialogState extends State<AddPetDialog> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             side: const BorderSide(
-                                width: 2, color: UiColor.theme2_color),
+                                width: 2, color: UiColor.theme2Color),
                           ),
                           child: const Text(
                             '取消',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: UiColor.theme2_color,
+                              color: UiColor.theme2Color,
                             ),
                           ),
                           onPressed: () {
@@ -141,14 +143,14 @@ class _AddPetDialogState extends State<AddPetDialog> {
                           style: TextButton.styleFrom(
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
-                            backgroundColor: UiColor.theme2_color,
+                            backgroundColor: UiColor.theme2Color,
                           ),
                           child: const Text(
                             '確定',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: UiColor.theme1_color,
+                              color: UiColor.theme1Color,
                             ),
                           ),
                           onPressed: () {

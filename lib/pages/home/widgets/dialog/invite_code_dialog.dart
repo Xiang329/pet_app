@@ -1,7 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
+import 'package:pet_app/services/pets_service.dart';
+import 'package:pet_app/utils/validators.dart';
+import 'package:pet_app/widgets/custom_button.dart';
+import 'package:pet_app/widgets/filled_text_field.dart';
+import 'package:provider/provider.dart';
 
 class InviteCodeDialog extends StatefulWidget {
   const InviteCodeDialog({
@@ -13,8 +21,53 @@ class InviteCodeDialog extends StatefulWidget {
 }
 
 class _InviteCodeDialogState extends State<InviteCodeDialog> {
+  final GlobalKey<FormState> _formKey = GlobalKey();
   TextEditingController codeController = TextEditingController();
-  int selectedOption = 1;
+
+  Future submit() async {
+    if (_formKey.currentState!.validate()) {
+      final member = Provider.of<AppProvider>(context, listen: false).member;
+      try {
+        await PetsService.getPetByCode(codeController.text).then((pet) async {
+          for (var pm in pet.petManagementList) {
+            if (member?.memberId == pm.member?.memberId) {
+              throw ('無法新增自己的寵物');
+            }
+          }
+          final petManagementData = {
+            "PM_MemberID": member?.memberId,
+            "PM_PetID": pet.petId,
+            "PM_Permissions": '3',
+          };
+          debugPrint(petManagementData.toString());
+          await PetManagementsService.createPetManagement(petManagementData);
+          if (!mounted) return;
+          await Provider.of<AppProvider>(context, listen: false).updateMember();
+        });
+        if (!mounted) return;
+        Navigator.of(context).pop(codeController.text);
+      } catch (e) {
+        if (!context.mounted) return;
+        showCupertinoDialog(
+          context: context,
+          builder: (context) {
+            return CupertinoAlertDialog(
+              title: const Text('新增失敗'),
+              content: Text(e.toString()),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text('確定'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,89 +87,78 @@ class _InviteCodeDialogState extends State<InviteCodeDialog> {
             ),
             Padding(
               padding: const EdgeInsets.all(30.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "請輸入邀請碼",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: UiColor.text1_color,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "請輸入邀請碼",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: UiColor.text1Color,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                    clipBehavior: Clip.antiAlias,
-                    child: TextFormField(
+                    const SizedBox(height: 10),
+                    FilledTextField(
                       controller: codeController,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: UiColor.theme2Color,
+                      ),
+                      validator: (value) => Validators.stringValidator(
+                        value,
+                        errorMessage: '邀請碼',
+                        onlyInt: true,
+                      ),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: UiColor.text1_color),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 20.0, vertical: 10),
-                        fillColor: UiColor.textinput_color,
-                        filled: true,
-                        border: InputBorder.none,
-                      ),
+                      labelSize: 14,
+                      height: 10,
+                      topLeftRadius: 8,
+                      topRightRadius: 8,
+                      bottomLeftRadius: 8,
+                      bottomRightRadius: 8,
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      SizedBox(
-                        height: 36,
-                        width: 96,
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            side: const BorderSide(
-                                width: 2, color: UiColor.theme2_color),
-                          ),
-                          child: const Text(
-                            '取消',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: UiColor.theme2_color,
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(
+                          height: 36,
+                          width: 96,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              side: const BorderSide(
+                                  width: 2, color: UiColor.theme2Color),
                             ),
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      SizedBox(
-                        height: 36,
-                        width: 96,
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            backgroundColor: UiColor.theme2_color,
-                          ),
-                          child: const Text(
-                            '加入',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: UiColor.theme1_color,
+                            child: const Text(
+                              '取消',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: UiColor.theme2Color,
+                              ),
                             ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
                           ),
-                          onPressed: () {
-                            Navigator.of(context).pop(codeController.text);
-                          },
                         ),
-                      ),
-                    ],
-                  )
-                ],
+                        const SizedBox(width: 20),
+                        SizedBox(
+                          height: 36,
+                          width: 96,
+                          child: CustomButton(
+                              asyncOnPressed: submit, buttonText: '加入'),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           ],

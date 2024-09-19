@@ -1,14 +1,17 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/models/animal.dart';
+import 'package:pet_app/model/animal.dart';
 import 'package:pet_app/pages/drawer/adoption/adoption_filter_page.dart';
 import 'package:pet_app/pages/drawer/adoption/widgets/adoption_list_item.dart';
+import 'package:pet_app/widgets/empty_data.dart';
 import 'package:pet_app/widgets/filter_field.dart';
+import 'package:pet_app/widgets/no_results.dart';
 
 class AdoptionPage extends StatefulWidget {
   const AdoptionPage({super.key});
@@ -18,62 +21,141 @@ class AdoptionPage extends StatefulWidget {
 }
 
 class _AdoptionPageState extends State<AdoptionPage> {
+  final ScrollController _scrollController = ScrollController();
   List<Animal> animals = [];
   List<Animal> filteredAnimals = [];
-  bool loaded = false;
+  String? animalKind, animalVariety, animalSex, shelterName;
+  int currentPage = 1;
+  bool isFiltering = false;
+  bool isLoading = false;
+  bool hasMoreData = true;
+  late Future loadData;
 
-  Future loadData() async {
-    if (loaded == true) return;
-    loaded = true;
-    try {
-      String apiUri =
-          r"https://data.moa.gov.tw/Service/OpenData/TransService.aspx?UnitId=QcbUEzN6E6DL&$top=50";
-      final response = await http.get(Uri.parse(apiUri));
-      if (response.statusCode == 200) {
-        dynamic result = json.decode(response.body);
-        animals =
-            List<Animal>.from((result as List).map((x) => Animal.fromJson(x)));
-        filteredAnimals = animals;
-        return animals;
+  @override
+  void initState() {
+    super.initState();
+    loadData = loadAnimalData();
+    _scrollController.addListener(() {
+      // 滑動到底部後加載更多
+      if (hasMoreData &&
+          _scrollController.position.pixels ==
+              _scrollController.position.maxScrollExtent) {
+        loadAnimalData();
       }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  List<Animal> filterAnimals(List<Animal> animals,
-      {String? kind, String? variety, String? shelter, String? sex}) {
-    return animals.where((animal) {
-      final matchesKind = kind == null || animal.animalKind == kind;
-      final matchesVariety = variety == null || animal.animalVariety == variety;
-      final matchesShelter = shelter == null || animal.shelterName == shelter;
-      final matchesSex = sex == null || animal.animalSex == sex;
-      return matchesKind && matchesVariety && matchesShelter && matchesSex;
-    }).toList();
+    });
   }
 
   void applyFilters(Map<String, String> filters) {
+    isFiltering = true;
     setState(() {
-      filteredAnimals = filterAnimals(
-        animals,
-        kind: filters['kind'],
-        variety: filters['variety'],
-        shelter: filters['shelter'],
-        sex: filters['sex'],
-      );
+      currentPage = 1;
+      hasMoreData = true;
+      animals.clear();
+      filteredAnimals.clear();
+      animalKind = filters['kind'];
+      animalVariety = filters['variety'];
+      animalSex = filters['sex'];
+      shelterName = filters['shelter'];
+      loadData = loadAnimalData();
     });
+  }
+
+  Future loadAnimalData() async {
+    if (isLoading) return;
+    isLoading = true;
+    String apiUrl =
+        'https://data.moa.gov.tw/Service/OpenData/TransService.aspx?UnitId=QcbUEzN6E6DL&\$top=10&\$skip=${(currentPage - 1) * 10}';
+
+    List<String> filters = [];
+    if (animalKind != null && animalKind!.isNotEmpty) {
+      filters.add('animal_kind=${Uri.encodeComponent(animalKind!)}');
+    }
+    if (animalVariety != null && animalVariety!.isNotEmpty) {
+      filters.add('animal_Variety=${Uri.encodeComponent(animalVariety!)}');
+    }
+    if (animalSex != null && animalSex!.isNotEmpty) {
+      const Map<String, String> sex = {'M': '公', 'F': '母', 'N': '未輸入'};
+      String matchSex = sex.keys.firstWhere((key) => sex[key] == animalSex);
+      filters.add('animal_sex=${Uri.encodeComponent(matchSex)}');
+    }
+    if (shelterName != null && shelterName!.isNotEmpty) {
+      filters.add('shelter_name=${Uri.encodeComponent(shelterName!)}');
+    }
+
+    if (filters.isNotEmpty) {
+      final filtersString = filters.join('&');
+      apiUrl = '$apiUrl&$filtersString';
+    }
+    debugPrint(Uri.decodeComponent(apiUrl));
+
+    try {
+      await Future.delayed(const Duration(seconds: 1));
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result.isNotEmpty) {
+          setState(() {
+            currentPage++;
+            animals.addAll(
+                List<Animal>.from(result.map((x) => Animal.fromJson(x))));
+            filteredAnimals = animals;
+            if (animals.length < 10) hasMoreData = false;
+          });
+        } else {
+          setState(() {
+            hasMoreData = false;
+          });
+        }
+      }
+    } on http.ClientException catch (e) {
+      if (e.message == 'XMLHttpRequest error.') {
+        setState(() {
+          hasMoreData = false;
+        });
+        if (!mounted) return;
+        showCupertinoDialog(
+          context: context,
+          builder: (context) {
+            return CupertinoAlertDialog(
+              title: const Text('錯誤'),
+              content: const Text('無法連線至伺服器，請檢查網路連線。'),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text('確定'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+      throw (e.toString());
+    } catch (e) {
+      setState(() {
+        hasMoreData = false;
+      });
+      debugPrint(e.toString());
+    } finally {
+      isLoading = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
-        backgroundColor: UiColor.theme2_color,
+        backgroundColor: UiColor.theme2Color,
         title: const Text("認領養資訊"),
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
       ),
       body: Column(
@@ -83,47 +165,59 @@ class _AdoptionPageState extends State<AdoptionPage> {
             onFilterApplied: applyFilters,
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  FutureBuilder(
-                    future: loadData(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
+            child: FutureBuilder(
+                future: loadData,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (isFiltering && filteredAnimals.isEmpty) {
+                    return const Center(child: NoResults());
+                  }
+                  if (filteredAnimals.isEmpty) {
+                    return const Center(child: EmptyData());
+                  }
+                  isFiltering = false;
+                  return ListView.separated(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    shrinkWrap: true,
+                    itemCount: filteredAnimals.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index < filteredAnimals.length) {
+                        return AdoptionListItem(animal: filteredAnimals[index]);
                       } else {
-                        return ListView.separated(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: filteredAnimals.length,
-                          itemBuilder: (context, index) {
-                            return AdoptionListItem(
-                              animal: filteredAnimals[index],
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const SizedBox(height: 0),
-                        );
+                        return getMoreWidget(hasMoreData);
                       }
                     },
-                  ),
-                ],
-              ),
-            ),
+                    separatorBuilder: (BuildContext context, int index) =>
+                        const SizedBox(height: 0),
+                  );
+                }),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: UiColor.theme2_color,
-        shape: const CircleBorder(),
-        onPressed: () {
-          for (var element in filterAnimals(animals, sex: "公")) {
-            print(element);
-          }
-        },
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
+    );
+  }
+
+  Widget getMoreWidget(bool hasMoreData) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              hasMoreData ? '讀取中...　' : '沒有更多資料了',
+              style: const TextStyle(fontSize: 16.0),
+            ),
+            if (hasMoreData)
+              const CircularProgressIndicator(
+                strokeWidth: 2.0,
+              )
+          ],
         ),
       ),
     );

@@ -1,11 +1,15 @@
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pet_app/common/app_assets.dart';
+import 'dart:convert';
+
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/models/hospital.dart';
-import 'package:pet_app/models/shop.dart';
+import 'package:pet_app/model/place.dart';
+import 'package:pet_app/pages/search/search_filter_page.dart';
 import 'package:pet_app/pages/search/widgets/hospital_list_item.dart';
 import 'package:pet_app/pages/search/widgets/shop_list_item.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_app/widgets/filter_field.dart';
+import 'package:pet_app/widgets/no_results.dart';
 
 class SearchPlacePage extends StatefulWidget {
   const SearchPlacePage({super.key});
@@ -16,121 +20,230 @@ class SearchPlacePage extends StatefulWidget {
 
 class _SearchPlacePageState extends State<SearchPlacePage>
     with SingleTickerProviderStateMixin {
+  final GlobalKey<FilterFieldState> filterFieldKey = GlobalKey();
   TextEditingController searchController = TextEditingController();
   late TabController tabController;
-
-  List<Hospital> hospitals = [
-    Hospital('Hospital1', '241新北市三重區重陽路一段20巷4號1樓', '0229719531', 5.0),
-    Hospital('Hospital2', '241新北市三重區重陽路一段20巷4號1樓', '0229719531', 4.5),
-    Hospital('Hospital3', '241新北市三重區重陽路一段20巷4號1樓', '0229719531', 4.0),
-    Hospital('Hospital4', '241新北市三重區重陽路一段20巷4號1樓', '0229719531', 3.5),
-    Hospital('Hospital5', '241新北市三重區重陽路一段20巷4號1樓', '0229719531', 3.0),
-    Hospital('Hospital6', '241新北市三重區重陽路一段20巷4號1樓', '0229719531', 2.5),
-    Hospital('Hospital7', '241新北市三重區重陽路一段20巷4號1樓', '0229719531', 2.0),
-  ];
-  List<Shop> shops = [
-    Shop('Shop1', '241新北市三重區中正北路510號', '0229821666', 5.0),
-    Shop('Shop2', '241新北市三重區中正北路510號', '0229821666', 5.0),
-    Shop('Shop3', '241新北市三重區中正北路510號', '0229821666', 5.0),
-    Shop('Shop4', '241新北市三重區中正北路510號', '0229821666', 5.0),
-    Shop('Shop5', '241新北市三重區中正北路510號', '0229821666', 5.0),
-    Shop('Shop6', '241新北市三重區中正北路510號', '0229821666', 5.0),
-    Shop('Shop7', '241新北市三重區中正北路510號', '0229821666', 5.0),
-  ];
-
-  var hospitalsItems = [];
-  var shopItems = [];
-
-  void _clearSearchResults() {
-    setState(() {
-      searchController.text = '';
-      hospitalsSearchResults('');
-      shopsSearchResults('');
-    });
-  }
+  // 臺北市經緯度
+  final defaultPosition = ('25.0329694', '121.5654177');
+  bool loaded = false;
+  Position? currentLocation;
+  Future? fetchHospitals;
+  Future? fetchStores;
+  List<Place> hospitalPlaces = [];
+  List<Place> storePlaces = [];
+  final List<Place> filteredHospitalPlaces = [];
+  final List<Place> filteredStorePlaces = [];
+  bool hasLoaded = false;
 
   @override
   void initState() {
-    tabController = TabController(length: 2, vsync: this);
-    tabController.addListener(_clearSearchResults);
-    hospitalsItems = hospitals;
-    shopItems = shops;
     super.initState();
-  }
-
-  void hospitalsSearchResults(String query) {
-    setState(() {
-      hospitalsItems = hospitals
-          .where(
-              (item) => item.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+    tabController = TabController(length: 2, vsync: this);
+    tabController.addListener(clearFilters);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await _determinePosition();
+      } catch (e) {
+        debugPrint(e.toString());
+      } finally {
+        try {
+          await Future.wait([
+            fetchHospitals = _fetchHospitals(),
+            fetchStores = _fetchStores(),
+          ]).whenComplete(() {
+            setState(() {});
+          });
+        } catch (e) {
+          debugPrint('Place錯誤${e.toString()}');
+        }
+      }
     });
   }
 
-  void shopsSearchResults(String query) {
+  Future _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // 先檢查有無開啟定位功能
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    // 檢查有無開啟定位權限
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Android預設若拒絕兩次則會永久關閉(deniedForever)，使用者需至設定中手動開啟
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    if (permission == LocationPermission.unableToDetermine) {
+      return Future.error('Location permissions are denied');
+    }
+
+    // 如成功取得權限，使用以下function取得位置
+    final position = await Geolocator.getCurrentPosition();
+    currentLocation = position;
+  }
+
+  Future<PlacesResponse> _fetchPlaces(String query) async {
+    debugPrint('搜尋位置:$query');
+    if (currentLocation == null) {
+      debugPrint('使用預設經緯度(台北市)');
+    } else {
+      debugPrint('使用裝置定位位置');
+    }
+    // 遮罩
+    final List<String> fieldMaskFields = [
+      // '*',
+      'places.displayName',
+      'places.formattedAddress',
+      'places.nationalPhoneNumber',
+      'places.location',
+      'places.googleMapsUri',
+      'places.regularOpeningHours.weekdayDescriptions',
+      'places.rating',
+      'places.userRatingCount',
+    ];
+    final response = await http.post(
+      Uri.parse('https://places.googleapis.com/v1/places:searchText'),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': 'AIzaSyCuYwvp1_QoOP2Vd0VVGKMCjMYDyi0zL2w',
+        'X-Goog-FieldMask': fieldMaskFields.join(','),
+      },
+      body: json.encode({
+        "textQuery": query,
+        "pageSize": 20,
+        "languageCode": "zh-TW",
+        "locationBias": {
+          "circle": {
+            "center": {
+              "latitude": currentLocation?.latitude ?? defaultPosition.$1,
+              "longitude": currentLocation?.longitude ?? defaultPosition.$2
+            },
+            "radius": 10000.0
+          }
+        }
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      final placesResponse = PlacesResponse.fromJson(jsonResponse);
+      return placesResponse;
+    } else {
+      throw Exception('Failed to load places');
+    }
+  }
+
+  Future<void> _fetchHospitals() async {
+    // await _fetchPlaces("動物醫院").then((value) {
+    //   hospitalPlaces.clear();
+    //   filteredHospitalPlaces.clear();
+    //   hospitalPlaces.addAll(value.places);
+    //   filteredHospitalPlaces.addAll(value.places);
+    // });
+  }
+
+  Future<void> _fetchStores() async {
+    // await _fetchPlaces("動物商店").then((value) {
+    //   storePlaces.clear();
+    //   filteredStorePlaces.clear();
+    //   storePlaces.addAll(value.places);
+    //   filteredStorePlaces.addAll(value.places);
+    // });
+  }
+
+  List<Place> filterHospital(
+    List<Place> placeList, {
+    String? city,
+    String? district,
+  }) {
+    return placeList.where((values) {
+      final matchesCity =
+          city == null || values.formattedAddress.contains(city);
+      final matchesDistrict =
+          district == null || values.formattedAddress.contains(district);
+      return matchesCity && matchesDistrict;
+    }).toList();
+  }
+
+  List<Place> filterStore(
+    List<Place> placeList, {
+    String? city,
+    String? district,
+  }) {
+    return placeList.where((values) {
+      final matchesCity =
+          city == null || values.formattedAddress.contains(city);
+      final matchesDistrict =
+          district == null || values.formattedAddress.contains(district);
+      return matchesCity && matchesDistrict;
+    }).toList();
+  }
+
+  void applyFilters(Map<String, String> filters) {
+    if (!hasLoaded) return;
     setState(() {
-      shopItems = shops
-          .where(
-              (item) => item.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      if (tabController.index == 0) {
+        filteredStorePlaces.clear();
+        filteredStorePlaces.addAll(storePlaces);
+        filteredHospitalPlaces.clear();
+        filteredHospitalPlaces.addAll(filterHospital(
+          hospitalPlaces,
+          city: filters['city'],
+          district: filters['district'],
+        ));
+      } else {
+        filteredHospitalPlaces.clear();
+        filteredHospitalPlaces.addAll(hospitalPlaces);
+        filteredStorePlaces.clear();
+        filteredStorePlaces.addAll(filterStore(
+          storePlaces,
+          city: filters['city'],
+          district: filters['district'],
+        ));
+      }
     });
+  }
+
+  void clearFilters() {
+    filterFieldKey.currentState?.clearFilters();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: UiColor.theme2_color,
+        backgroundColor: UiColor.theme2Color,
         titleSpacing: 0,
-        title: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: TextField(
-            onChanged: (value) {
-              if (tabController.index == 0) {
-                hospitalsSearchResults(value);
-              } else {
-                shopsSearchResults(value);
-              }
-            },
-            style: const TextStyle(color: UiColor.text1_color),
-            controller: searchController,
-            decoration: InputDecoration(
-              prefixIcon: Padding(
-                padding: const EdgeInsets.only(left: 20, right: 10),
-                child: SvgPicture.asset(
-                  AssetsImages.searchSvg,
-                  height: 14,
-                  width: 14,
-                ),
-              ),
-              hintText: '搜尋',
-              hintStyle: const TextStyle(
-                  color: UiColor.text1_color,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30.0),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30.0),
-                borderSide: BorderSide.none,
-              ),
-              fillColor: UiColor.textinput_color,
-              filled: true,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
+        title: FilterField(
+          key: filterFieldKey,
+          useHorizontalScroll: true,
+          filterPage: const SearchFilterPage(),
+          onFilterApplied: applyFilters,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          maxHeight: 2,
         ),
         bottom: TabBar(
           controller: tabController,
           onTap: (value) {
-            _clearSearchResults();
+            if (tabController.indexIsChanging) {
+              clearFilters();
+            }
           },
-          indicatorColor: UiColor.text1_color,
-          labelColor: UiColor.text1_color,
-          unselectedLabelColor: UiColor.text2_color,
+          indicatorColor: UiColor.text1Color,
+          labelColor: UiColor.text1Color,
+          unselectedLabelColor: UiColor.text2Color,
           labelStyle:
               const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           tabs: const [
@@ -140,29 +253,63 @@ class _SearchPlacePageState extends State<SearchPlacePage>
         ),
       ),
       body: Container(
-        color: UiColor.theme1_color,
+        color: UiColor.theme1Color,
         child: TabBarView(
           controller: tabController,
           children: [
-            ListView.separated(
-              itemCount: hospitalsItems.length,
-              itemBuilder: (context, index) {
-                return HospitalItem(
-                  hospital: hospitalsItems[index],
+            FutureBuilder(
+              future: fetchHospitals,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.connectionState == ConnectionState.done) {
+                  hasLoaded = true;
+                  if (filteredHospitalPlaces.isEmpty) {
+                    return const NoResults();
+                  }
+                }
+                return ListView.separated(
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
+                  itemCount: filteredHospitalPlaces.length,
+                  itemBuilder: (context, index) {
+                    return HospitalItem(
+                      hospital: filteredHospitalPlaces[index],
+                      tabIndex: tabController.index,
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 0),
                 );
               },
-              separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(height: 0),
             ),
-            ListView.separated(
-              itemCount: shopItems.length,
-              itemBuilder: (context, index) {
-                return ShopItem(
-                  shop: shopItems[index],
+            FutureBuilder(
+              future: fetchStores,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.connectionState == ConnectionState.done) {
+                  hasLoaded = true;
+                  if (filteredStorePlaces.isEmpty) {
+                    return const NoResults();
+                  }
+                }
+                return ListView.separated(
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
+                  itemCount: filteredStorePlaces.length,
+                  itemBuilder: (context, index) {
+                    return ShopItem(
+                      shop: filteredStorePlaces[index],
+                      tabIndex: tabController.index,
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 0),
                 );
               },
-              separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(height: 0),
             ),
           ],
         ),

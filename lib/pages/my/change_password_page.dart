@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:pet_app/widgets/filled_text_field_2.dart';
+import 'package:pet_app/utils/validators.dart';
+import 'package:pet_app/widgets/custom_button.dart';
+import 'package:pet_app/widgets/filled_text_field.dart';
 import 'package:provider/provider.dart';
 
 class ChangePasswordPage extends StatefulWidget {
@@ -14,6 +17,7 @@ class ChangePasswordPage extends StatefulWidget {
 }
 
 class _ChangePasswordPageState extends State<ChangePasswordPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey();
   TextEditingController oldPasswordController = TextEditingController();
   TextEditingController newPasswordController = TextEditingController();
   TextEditingController verifyPasswordController = TextEditingController();
@@ -21,18 +25,80 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   bool _isHidden2 = true;
   bool _isHidden3 = true;
 
+  Future submit() async {
+    String oldPassword = oldPasswordController.text;
+    String newPassword = newPasswordController.text;
+    String verifyPassword = verifyPasswordController.text;
+
+    if (_formKey.currentState!.validate()) {
+      try {
+        if (oldPassword == newPassword) {
+          throw '舊密碼與新密碼相同';
+        }
+        if (newPassword != verifyPassword) {
+          throw '新密碼和確認的密碼不相同';
+        }
+        await Provider.of<AuthModel>(context, listen: false)
+            .changePassword(context, oldPassword, newPassword)
+            .then((_) {
+          if (!mounted) return;
+          showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return CupertinoAlertDialog(
+                title: const Text('通知'),
+                content: const Text('變更密碼成功。'),
+                actions: <Widget>[
+                  CupertinoDialogAction(
+                    child: const Text('確定'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        });
+        if (!mounted) return;
+        Navigator.of(context).pop();
+      } catch (e) {
+        if (!mounted) return;
+        showCupertinoDialog(
+          context: context,
+          builder: (context) {
+            return CupertinoAlertDialog(
+              title: const Text('錯誤'),
+              content: Text(e.toString()),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text('確定'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    bool isLoading = Provider.of<AuthModel>(context).loading;
-
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
         title: const Text("變更密碼"),
-        backgroundColor: UiColor.theme1_color,
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context).pop(),
+        backgroundColor: UiColor.theme1Color,
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
       ),
       body: LayoutBuilder(builder: (context, constraints) {
@@ -49,17 +115,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               children: [
                 Column(
                   children: [
-                    Card(
-                      color: UiColor.theme1_color,
-                      shadowColor: Colors.transparent,
-                      clipBehavior: Clip.antiAlias,
+                    Form(
+                      key: _formKey,
                       child: Column(
                         children: [
                           // 目前的密碼輸入框
-                          FilledTextField2(
+                          FilledTextField(
                             controller: oldPasswordController,
                             obscureText: _isHidden,
                             labelText: '目前的密碼',
+                            validator: (value) =>
+                                Validators.passwordVaildator(value),
                             suffixIcon: IconButton(
                               alignment: Alignment.center,
                               padding:
@@ -73,13 +139,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                 });
                               },
                             ),
+                            topLeftRadius: 8,
+                            topRightRadius: 8,
                           ),
                           const SizedBox(height: 10),
 
                           // 新密碼輸入框
-                          FilledTextField2(
+                          FilledTextField(
                             controller: newPasswordController,
                             obscureText: _isHidden2,
+                            validator: (value) =>
+                                Validators.passwordVaildator(value),
                             labelText: '新密碼',
                             suffixIcon: IconButton(
                               alignment: Alignment.center,
@@ -98,9 +168,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           const SizedBox(height: 10),
 
                           // 再次輸入新密碼輸入框
-                          FilledTextField2(
+                          FilledTextField(
                             controller: verifyPasswordController,
                             obscureText: _isHidden3,
+                            validator: (value) =>
+                                Validators.passwordVaildator(value),
                             labelText: '再次輸入新密碼',
                             suffixIcon: IconButton(
                               alignment: Alignment.center,
@@ -115,6 +187,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                 });
                               },
                             ),
+                            bottomLeftRadius: 8,
+                            bottomRightRadius: 8,
                           ),
                         ],
                       ),
@@ -129,7 +203,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           child: const Text(
                             "忘記密碼?",
                             style: TextStyle(
-                              color: UiColor.text1_color,
+                              color: UiColor.text1Color,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -147,96 +221,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 // 修改密碼按鈕
                 SizedBox(
                   height: 42,
-                  child: TextButton(
-                      style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          backgroundColor: UiColor.theme2_color),
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 25,
-                              width: 25,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              '完成',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                      onPressed: () {
-                        String oldPassword = oldPasswordController.text;
-                        String newPassword = newPasswordController.text;
-                        String verifyPassword = verifyPasswordController.text;
-                        if (oldPassword == newPassword) {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text("錯誤"),
-                                content: const Text("舊密碼與新密碼相同"),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text("OK"),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                          return;
-                        }
-
-                        if (newPassword != verifyPassword) {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text("錯誤"),
-                                content: const Text("新密碼與重複密碼不一致"),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text("OK"),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                          return;
-                        }
-                        if (!isLoading) {
-                          Provider.of<AuthModel>(context, listen: false)
-                              .changePassword(context, oldPassword, newPassword)
-                              .catchError((error) {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text("Error"),
-                                  content: Text(error.toString()),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text("OK"),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          });
-                        }
-                      }),
+                  child: CustomButton(asyncOnPressed: submit, buttonText: '保存'),
                 ),
               ],
             ),

@@ -4,7 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pet_app/providers/auth_provider.dart';
-import 'package:pet_app/widgets/filled_text_field_2.dart';
+import 'package:pet_app/utils/validators.dart';
+import 'package:pet_app/widgets/custom_button.dart';
+import 'package:pet_app/widgets/filled_text_field.dart';
 import 'package:provider/provider.dart';
 
 class DelAccountPage extends StatefulWidget {
@@ -15,21 +17,88 @@ class DelAccountPage extends StatefulWidget {
 }
 
 class _DelAccountPageState extends State<DelAccountPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<FormState> _formKey = GlobalKey();
   TextEditingController passwordController = TextEditingController();
   bool _isHidden = true;
 
+  Future submit() async {
+    if (_formKey.currentState!.validate()) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('刪除帳號'),
+            content: const Text('刪除帳號後，您將無法在使用該帳號登入。確定要繼續嗎？'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text('取消'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              CupertinoDialogAction(
+                child: const Text(
+                  '刪除',
+                  style: TextStyle(
+                    color: UiColor.errorColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  try {
+                    await Provider.of<AuthModel>(context, listen: false)
+                        .deleteUserAccount(passwordController.text)
+                        .then((_) {
+                      Navigator.of(_scaffoldKey.currentContext!,
+                              rootNavigator: true)
+                          .pop();
+                    });
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (context) {
+                        return CupertinoAlertDialog(
+                          title: const Text('錯誤'),
+                          content: Text(e.toString()),
+                          actions: <Widget>[
+                            CupertinoDialogAction(
+                              child: const Text('確定'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<AuthModel>(context, listen: false).user;
-
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      key: _scaffoldKey,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
         title: const Text("刪除帳號"),
-        backgroundColor: UiColor.theme1_color,
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context).pop(),
+        backgroundColor: UiColor.theme1Color,
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
       ),
       body: LayoutBuilder(builder: (context, constraints) {
@@ -44,45 +113,44 @@ class _DelAccountPageState extends State<DelAccountPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      "刪除您的帳號?",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: UiColor.text1_color,
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        "刪除您的帳號?",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: UiColor.text1Color,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    const Text(
-                      "如果您選擇刪除， \n我們將在伺服器上刪除您的帳戶及相關資料。",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: UiColor.text2_color,
+                      const SizedBox(height: 30),
+                      const Text(
+                        "如果您選擇刪除， \n我們將在伺服器上刪除您的帳戶及相關資料。",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: UiColor.text2Color,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "請重新輸入密碼來完成操作。",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: UiColor.text2_color,
+                      const SizedBox(height: 10),
+                      const Text(
+                        "請重新輸入密碼來完成操作。",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: UiColor.text2Color,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
-                    // 密碼輸入框
-                    Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: FilledTextField2(
+                      // 密碼輸入框
+                      FilledTextField(
                         controller: passwordController,
                         obscureText: _isHidden,
-                        labelText: '再次輸入新密碼',
+                        validator: (value) =>
+                            Validators.passwordVaildator(value),
+                        labelText: '密碼',
                         suffixIcon: IconButton(
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -95,63 +163,23 @@ class _DelAccountPageState extends State<DelAccountPage> {
                             });
                           },
                         ),
+                        topLeftRadius: 8,
+                        topRightRadius: 8,
+                        bottomLeftRadius: 8,
+                        bottomRightRadius: 8,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 40),
                 // 確認刪除按鈕
                 SizedBox(
                   height: 42,
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        backgroundColor: const Color(0xffe35050)),
-                    child: const Text(
-                      '確認刪除',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                    onPressed: () {
-                      showCupertinoDialog(
-                        context: context,
-                        builder: (context) {
-                          return CupertinoAlertDialog(
-                            title: const Text('刪除帳號'),
-                            content: const Text('刪除帳號後，您將無法在使用該帳號登入。確定要繼續嗎？'),
-                            actions: <Widget>[
-                              CupertinoDialogAction(
-                                child: const Text('取消'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                              CupertinoDialogAction(
-                                child: const Text(
-                                  '刪除',
-                                  style: TextStyle(
-                                      color: Color(0xffe35050),
-                                      fontWeight: FontWeight.w700),
-                                ),
-                                onPressed: () {
-                                  if (user != null) {
-                                    Provider.of<AuthModel>(context,
-                                            listen: false)
-                                        .deleteUserAccount(
-                                            passwordController.text);
-                                  }
-                                  // Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
+                  child: CustomButton(
+                    asyncOnPressed: submit,
+                    buttonText: '確認刪除',
+                    errorStyle: true,
                   ),
                 ),
               ],

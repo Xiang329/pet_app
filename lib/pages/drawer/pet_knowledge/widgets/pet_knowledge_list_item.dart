@@ -1,6 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:pet_app/models/pet_knowledge.dart';
+import 'package:pet_app/model/pet_knowledge.dart';
 import 'package:pet_app/pages/drawer/pet_knowledge/pet_knowledge_detail_page.dart';
 
 class PetKnowledgeListItem extends StatefulWidget {
@@ -22,14 +23,16 @@ class _PetKnowledgeListItemState extends State<PetKnowledgeListItem> {
         child: SizedBox(
           height: 100,
           child: Card(
-            color: UiColor.textinput_color,
+            color: UiColor.textinputColor,
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const PetKnowledgeDetailPage(),
+                  CupertinoPageRoute(
+                    builder: (context) => PetKnowledgeDetailPage(
+                      petKnowleadge: widget.petKnowledge,
+                    ),
                   ),
                 );
               },
@@ -40,21 +43,23 @@ class _PetKnowledgeListItemState extends State<PetKnowledgeListItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "標題",
-                      style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.w600,
-                          color: UiColor.text1_color),
+                    Text(
+                      widget.petKnowledge.pkTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                        color: UiColor.text1Color,
+                      ),
                     ),
                     Text(
                       widget.petKnowledge.pkProposalContent,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: UiColor.text2_color),
+                        color: UiColor.text2Color,
+                      ),
                     ),
                   ],
                 ),

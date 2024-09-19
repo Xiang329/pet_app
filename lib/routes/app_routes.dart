@@ -1,20 +1,13 @@
 import 'package:pet_app/pages/auth/login_page.dart';
 import 'package:pet_app/pages/auth/register_page.dart';
 import 'package:pet_app/pages/auth/forget_password_page.dart';
-import 'package:pet_app/pages/home/access_control_page.dart';
 import 'package:pet_app/pages/home/add_pet_page.dart';
-import 'package:pet_app/pages/home/notification_and_record_pages/excretion/excretion_page.dart';
-import 'package:pet_app/pages/home/notification_and_record_pages/diet/diet_page.dart';
-import 'package:pet_app/pages/home/notification_and_record_pages/drug/drug_page.dart';
-import 'package:pet_app/pages/home/notification_and_record_pages/medical/medical_page.dart';
-import 'package:pet_app/pages/home/notification_and_record_pages/notification/notification_page.dart';
-import 'package:pet_app/pages/home/notification_and_record_pages/vaccine/vaccine_page.dart';
-import 'package:pet_app/pages/my/account_page.dart';
+import 'package:pet_app/pages/my/profile_page.dart';
 import 'package:pet_app/pages/my/del_account_page.dart';
 import 'package:pet_app/pages/my/forget_password_page.dart';
 import 'package:pet_app/pages/home_container_page.dart';
 import 'package:pet_app/pages/home/home_page.dart';
-import 'package:pet_app/pages/my/profile_page.dart';
+import 'package:pet_app/pages/my/edit_profile_page.dart';
 import 'package:pet_app/pages/my/change_password_page.dart';
 import 'package:pet_app/pages/search/search_place_page.dart';
 import 'package:pet_app/pages/socail/socail_page.dart';
@@ -56,24 +49,15 @@ class AppRoutes {
     homePage: (context) => const HomePage(),
     searchPage: (context) => const SearchPlacePage(),
     socialPage: (context) => const SocialPage(),
-    accountPage: (context) => const AccountPage(),
-    profilePage: (context) => const ProfilePage(),
+    accountPage: (context) => const ProfilePage(),
+    profilePage: (context) => const EditProfilePage(),
 
     // 登入後Auth頁面
     changePasswordPage: (context) => const ChangePasswordPage(),
     delAccountdPage: (context) => const DelAccountPage(),
     forgetPasswordPage2: (context) => const ForgetPasswordPage(),
 
-    // 寵物通知及紀錄頁面
-    notificationPage: (context) => const NotificationPage(),
-    vaccinePage: (context) => const VaccinePage(),
-    drugPage: (context) => const DrugPage(),
-    medicaldPage: (context) => const MedicalPage(),
-    dietPage: (context) => const DietPage(),
-    excretionPage: (context) => const ExcretionPage(),
-
     //
     addPetPage: (context) => const AddPetPage(),
-    accessControlPage: (context) => const AccessControlPage(),
   };
 }

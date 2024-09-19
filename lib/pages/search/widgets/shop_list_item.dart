@@ -1,13 +1,20 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/models/shop.dart';
+import 'package:pet_app/model/place.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_app/pages/search/place_detail.dart';
+import 'package:pet_app/utils/launcher_utils.dart';
 
 class ShopItem extends StatefulWidget {
-  final Shop shop;
-  const ShopItem({super.key, required this.shop});
+  final Place shop;
+  final int tabIndex;
+  const ShopItem({
+    super.key,
+    required this.shop,
+    required this.tabIndex,
+  });
 
   @override
   State<ShopItem> createState() => _ShopItemState();
@@ -19,15 +26,16 @@ class _ShopItemState extends State<ShopItem> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: Card(
-        color: UiColor.textinput_color,
+        color: UiColor.textinputColor,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
+              CupertinoPageRoute(
                 builder: (BuildContext context) => PlaceDetailPage(
-                  shop: widget.shop,
+                  place: widget.shop,
+                  tabIndex: widget.tabIndex,
                 ),
               ),
             );
@@ -41,48 +49,55 @@ class _ShopItemState extends State<ShopItem> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      widget.shop.name,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                        color: UiColor.text1_color,
+                    Flexible(
+                      child: Text(
+                        widget.shop.displayName.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: UiColor.text1Color,
+                        ),
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        LauncherUtils.openUrl(widget.shop.googleMapsUri);
+                      },
                       icon: SvgPicture.asset(AssetsImages.mapSvg),
                     )
                   ],
                 ),
                 Text(
-                  widget.shop.address,
+                  widget.shop.formattedAddress,
                   style: const TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.bold,
-                    color: UiColor.text2_color,
+                    color: UiColor.text2Color,
                   ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      widget.shop.phone,
+                      widget.shop.nationalPhoneNumber,
                       style: const TextStyle(
                         fontSize: 14.0,
                         fontWeight: FontWeight.bold,
-                        color: UiColor.text2_color,
+                        color: UiColor.text2Color,
                       ),
                     ),
                     Row(
                       children: [
-                        SvgPicture.asset(AssetsImages.starSvg),
+                        if (widget.shop.rating != null)
+                          SvgPicture.asset(AssetsImages.starSvg),
                         Text(
-                          ' ${widget.shop.star.toStringAsFixed(1)} ',
+                          ' ${widget.shop.rating!.toStringAsFixed(1)} ',
                           style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
-                            color: UiColor.theme2_color,
+                            color: UiColor.theme2Color,
                           ),
                         ),
                       ],

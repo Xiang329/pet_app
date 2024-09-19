@@ -1,13 +1,16 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 
-class DropdownList extends StatelessWidget {
+class DropdownList extends StatefulWidget {
   final String title;
   final List<String> items;
   final Function(String?)? onChanged;
   final String? value;
   final double? width;
+  final FormFieldValidator? validator;
   const DropdownList({
     super.key,
     required this.title,
@@ -15,18 +18,40 @@ class DropdownList extends StatelessWidget {
     this.onChanged,
     this.value,
     this.width,
+    this.validator,
   });
 
   @override
+  State<DropdownList> createState() => _DropdownListState();
+}
+
+class _DropdownListState extends State<DropdownList> {
+  bool _hasError = false;
+  bool _hasItems = false;
+
+  @override
   Widget build(BuildContext context) {
+    (widget.items.isEmpty) ? _hasItems = false : _hasItems = true;
     return LayoutBuilder(builder: (context, constraints) {
       return DropdownButtonFormField2<String>(
+        validator: (value) {
+          final errorText = widget.validator?.call(value);
+          setState(() {
+            _hasError = errorText != null;
+          });
+          return errorText;
+        },
         decoration: InputDecoration(
-          label: Text(title),
-          labelStyle: const TextStyle(
+          labelText: widget.title,
+          labelStyle: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: UiColor.text2_color,
+            fontWeight: FontWeight.w500,
+            color: _hasError ? UiColor.errorColor : UiColor.text2Color,
+          ),
+          errorStyle: const TextStyle(
+            color: UiColor.errorColor,
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
           ),
           contentPadding:
               const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
@@ -34,15 +59,26 @@ class DropdownList extends StatelessWidget {
           fillColor: Colors.white,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: UiColor.navigationBar_color),
+            borderSide: BorderSide(
+              width: widget.value == null ? 1 : 2,
+              color: UiColor.navigationBarColor,
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: UiColor.text1_color),
+            borderSide: const BorderSide(color: UiColor.text1Color),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: const BorderSide(color: UiColor.errorColor),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: const BorderSide(color: UiColor.errorColor),
           ),
         ),
         isExpanded: true,
-        items: items
+        items: widget.items
             .map(
               (String item) => DropdownMenuItem<String>(
                 value: item,
@@ -51,14 +87,25 @@ class DropdownList extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: UiColor.text1_color,
+                    color: UiColor.text1Color,
                   ),
                 ),
               ),
             )
             .toList(),
-        value: value,
-        onChanged: onChanged,
+        value: widget.value,
+        onChanged: widget.onChanged,
+        iconStyleData: IconStyleData(
+          icon: SvgPicture.asset(
+            AssetsImages.arrowDownSvg,
+            height: 24,
+            width: 24,
+            colorFilter: ColorFilter.mode(
+              _hasItems ? UiColor.navigationBarColor : Colors.grey.shade300,
+              BlendMode.srcIn,
+            ),
+          ),
+        ),
         // 保留
         // buttonStyleData: const ButtonStyleData(
         //   padding: EdgeInsets.only(left: 0),

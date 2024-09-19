@@ -1,14 +1,15 @@
-import 'dart:convert';
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:http/http.dart' as http;
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/models/pet_knowledge.dart';
+import 'package:pet_app/model/pet_knowledge.dart';
 import 'package:pet_app/pages/drawer/pet_knowledge/pet_knowledge_filter_page.dart';
 import 'package:pet_app/pages/drawer/pet_knowledge/widgets/pet_knowledge_list_item.dart';
+import 'package:pet_app/services/pet_knowledges_service.dart';
+import 'package:pet_app/widgets/empty_data.dart';
 import 'package:pet_app/widgets/filter_field.dart';
+import 'package:pet_app/widgets/no_results.dart';
 
 class PetKnowledgePage extends StatefulWidget {
   const PetKnowledgePage({super.key});
@@ -20,47 +21,57 @@ class PetKnowledgePage extends StatefulWidget {
 class _PetKnowledgePageState extends State<PetKnowledgePage> {
   List<PetKnowledge> article = [];
   List<PetKnowledge> filteredArticle = [];
-  bool loaded = false;
+  late Future loadData;
+  bool isFiltering = false;
 
-  Future loadData() async {
-    if (loaded == true) return;
-    loaded = true;
-    try {
-      String apiUri = "http://34.81.244.36/api/PetKnowledges";
-      final response = await http.get(Uri.parse(apiUri));
-      if (response.statusCode == 200) {
-        dynamic result = json.decode(response.body);
-        article = List<PetKnowledge>.from(
-            (result as List).map((x) => PetKnowledge.fromJson(x)));
-        filteredArticle = article;
-        return article;
-      }
-    } catch (e) {
-      print(e);
-    }
+  @override
+  void initState() {
+    super.initState();
+    loadData = loadPetKnowledgesData();
+  }
+
+  Future loadPetKnowledgesData() async {
+    article = await PetKnowledgesService.getPetKnowledges().catchError((e) {
+      if (!mounted) return;
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('錯誤'),
+            content: Text(e.toString()),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text('確定'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    });
+    filteredArticle = article;
   }
 
   List<PetKnowledge> filterArticle(List<PetKnowledge> article,
-      {String? kind, String? variety, String? age, String? weight}) {
+      {String? petClass, String? petVariety, String? age, String? weight}) {
     return article.where((petKnwoledge) {
-      final matchesKind = kind == null || petKnwoledge.className == kind;
-      // final matchesVariety = variety == null || animal.animalVariety == variety;
-      final matchesAge = age == null || petKnwoledge.pkPetAge.toString() == age;
-      final matchesWeight =
-          weight == null || petKnwoledge.pkPetWeight.toString() == weight;
-      // return matchesKind && matchesVariety && matchesShelter && matchesSex;
-      return matchesKind && matchesAge && matchesWeight;
+      final matchesClass =
+          petClass == null || petKnwoledge.className == petClass;
+      final matchesVariety =
+          petVariety == null || petKnwoledge.varietyName == petVariety;
+      return matchesClass && matchesVariety;
     }).toList();
   }
 
   void applyFilters(Map<String, String> filters) {
+    isFiltering = true;
     setState(() {
       filteredArticle = filterArticle(
         article,
-        kind: filters['kind'],
-        // variety: filters['variety'],
-        age: filters['age'],
-        weight: filters['weight'],
+        petClass: filters['class'],
+        petVariety: filters['variety'],
       );
     });
   }
@@ -68,13 +79,17 @@ class _PetKnowledgePageState extends State<PetKnowledgePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UiColor.theme1_color,
+      backgroundColor: UiColor.theme1Color,
       appBar: AppBar(
-        backgroundColor: UiColor.theme2_color,
+        backgroundColor: UiColor.theme2Color,
         title: const Text("寵物知識"),
-        leading: IconButton(
-          icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: SizedBox(
+          height: kToolbarHeight,
+          width: kToolbarHeight,
+          child: IconButton(
+            icon: SvgPicture.asset(AssetsImages.arrowBackSvg),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
       ),
       body: Column(
@@ -82,33 +97,38 @@ class _PetKnowledgePageState extends State<PetKnowledgePage> {
           FilterField(
             filterPage: const PetKnowledgeFilterPage(),
             onFilterApplied: applyFilters,
+            maxHeight: 2,
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  FutureBuilder(
-                      future: loadData(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        }
-                        return ListView.separated(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: filteredArticle.length,
-                          itemBuilder: (context, index) {
-                            return PetKnowledgeListItem(
-                              petKnowledge: filteredArticle[index],
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const SizedBox(height: 0),
-                        );
-                      }),
-                ],
-              ),
+            child: FutureBuilder(
+              future: loadData,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (isFiltering && filteredArticle.isEmpty) {
+                    return const Center(child: NoResults());
+                  }
+                }
+                if (filteredArticle.isEmpty) {
+                  return const Center(child: EmptyData());
+                }
+                isFiltering = false;
+                return ListView.separated(
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
+                  shrinkWrap: true,
+                  itemCount: filteredArticle.length,
+                  itemBuilder: (context, index) {
+                    return PetKnowledgeListItem(
+                      petKnowledge: filteredArticle[index],
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 0),
+                );
+              },
             ),
           ),
         ],

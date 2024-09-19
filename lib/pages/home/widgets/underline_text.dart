@@ -22,7 +22,7 @@ class UnderLineText extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: UiColor.text2_color,
+            color: UiColor.text2Color,
             width: lineWidth,
           ),
         ),
@@ -32,7 +32,7 @@ class UnderLineText extends StatelessWidget {
         style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: UiColor.text2_color,
+          color: UiColor.text2Color,
         ),
       ),
     );
