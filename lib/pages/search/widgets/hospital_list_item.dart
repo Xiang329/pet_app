@@ -84,7 +84,7 @@ class _HospitalItemState extends State<HospitalItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      widget.hospital.nationalPhoneNumber,
+                      widget.hospital.nationalPhoneNumber ?? '店家未提供',
                       style: const TextStyle(
                         fontSize: 14.0,
                         fontWeight: FontWeight.bold,
@@ -96,7 +96,7 @@ class _HospitalItemState extends State<HospitalItem> {
                         if (widget.hospital.rating != null)
                           SvgPicture.asset(AssetsImages.starSvg),
                         Text(
-                          ' ${widget.hospital.rating!.toStringAsFixed(1)} ',
+                          ' ${widget.hospital.rating?.toStringAsFixed(1)} ',
                           style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,

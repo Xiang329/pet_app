@@ -24,7 +24,7 @@ class PlacesResponse {
 }
 
 class Place {
-  final String nationalPhoneNumber;
+  final String? nationalPhoneNumber;
   final String formattedAddress;
   final Location location;
   final double? rating;
@@ -34,7 +34,7 @@ class Place {
   final DisplayName displayName;
 
   Place({
-    required this.nationalPhoneNumber,
+    this.nationalPhoneNumber,
     required this.formattedAddress,
     required this.location,
     this.rating,

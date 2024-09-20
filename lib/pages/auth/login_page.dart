@@ -22,13 +22,6 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   bool _isHidden = true;
 
-  @override
-  void initState() {
-    emailController.text = 'test@email.com';
-    passwordController.text = '123456';
-    super.initState();
-  }
-
   Future submit() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -69,7 +62,6 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Form(
               key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

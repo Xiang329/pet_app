@@ -5,7 +5,6 @@ import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/common/area_data.dart';
 import 'package:pet_app/widgets/custom_button.dart';
 import 'package:pet_app/widgets/dropdown_list.dart';
-import 'package:pet_app/widgets/left_label_dropdown_list.dart';
 
 class SearchFilterPage extends StatefulWidget {
   const SearchFilterPage({super.key});
@@ -50,17 +49,6 @@ class _SearchFilterPageState extends State<SearchFilterPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              LeftLabelDropdownList(
-                title: '縣市',
-                items: areaData.keys.toList(),
-                value: selectedCitys,
-                onChanged: (String? value) {
-                  setState(() {
-                    selectedDistrict = null;
-                    selectedCitys = value;
-                  });
-                },
-              ),
               DropdownList(
                 title: '縣市',
                 items: areaData.keys.toList(),

@@ -136,6 +136,9 @@ class _SearchPlacePageState extends State<SearchPlacePage>
       }),
     );
 
+    print("latitude ${currentLocation?.latitude ?? defaultPosition.$1}");
+    print("longitude ${currentLocation?.longitude ?? defaultPosition.$2}");
+
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
       final placesResponse = PlacesResponse.fromJson(jsonResponse);
@@ -146,21 +149,21 @@ class _SearchPlacePageState extends State<SearchPlacePage>
   }
 
   Future<void> _fetchHospitals() async {
-    // await _fetchPlaces("動物醫院").then((value) {
-    //   hospitalPlaces.clear();
-    //   filteredHospitalPlaces.clear();
-    //   hospitalPlaces.addAll(value.places);
-    //   filteredHospitalPlaces.addAll(value.places);
-    // });
+    await _fetchPlaces("動物醫院").then((value) {
+      hospitalPlaces.clear();
+      filteredHospitalPlaces.clear();
+      hospitalPlaces.addAll(value.places);
+      filteredHospitalPlaces.addAll(value.places);
+    });
   }
 
   Future<void> _fetchStores() async {
-    // await _fetchPlaces("動物商店").then((value) {
-    //   storePlaces.clear();
-    //   filteredStorePlaces.clear();
-    //   storePlaces.addAll(value.places);
-    //   filteredStorePlaces.addAll(value.places);
-    // });
+    await _fetchPlaces("動物商店").then((value) {
+      storePlaces.clear();
+      filteredStorePlaces.clear();
+      storePlaces.addAll(value.places);
+      filteredStorePlaces.addAll(value.places);
+    });
   }
 
   List<Place> filterHospital(
@@ -266,7 +269,7 @@ class _SearchPlacePageState extends State<SearchPlacePage>
                 if (snapshot.connectionState == ConnectionState.done) {
                   hasLoaded = true;
                   if (filteredHospitalPlaces.isEmpty) {
-                    return const NoResults();
+                    return const Center(child: CircularProgressIndicator());
                   }
                 }
                 return ListView.separated(

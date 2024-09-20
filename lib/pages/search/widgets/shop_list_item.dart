@@ -81,7 +81,7 @@ class _ShopItemState extends State<ShopItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      widget.shop.nationalPhoneNumber,
+                      widget.shop.nationalPhoneNumber ?? '店家未提供',
                       style: const TextStyle(
                         fontSize: 14.0,
                         fontWeight: FontWeight.bold,
@@ -93,7 +93,7 @@ class _ShopItemState extends State<ShopItem> {
                         if (widget.shop.rating != null)
                           SvgPicture.asset(AssetsImages.starSvg),
                         Text(
-                          ' ${widget.shop.rating!.toStringAsFixed(1)} ',
+                          ' ${widget.shop.rating?.toStringAsFixed(1)} ',
                           style: const TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,

@@ -72,7 +72,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '地址 ${widget.place.displayName.text}',
+                                widget.place.displayName.text,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -81,7 +81,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                widget.place.formattedAddress,
+                                '地址　${widget.place.formattedAddress}',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -90,7 +90,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                '電話 ${widget.place.nationalPhoneNumber}',
+                                '電話　${widget.place.nationalPhoneNumber}',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -99,7 +99,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                '評價 ${widget.place.rating} (${widget.place.userRatingCount})',
+                                '評價　${widget.place.rating} (${widget.place.userRatingCount})',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
