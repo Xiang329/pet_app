@@ -22,7 +22,7 @@ class ApiService {
       connectTimeout: const Duration(seconds: connectTimeout),
       receiveTimeout: const Duration(seconds: receiveTimeout),
       headers: {
-        "Access-Control-Allow-Origin": "*", // Required for CORS support to work
+        // "Access-Control-Allow-Origin": "*", // Required for CORS support to work
       },
     );
     // 初始化Dio
