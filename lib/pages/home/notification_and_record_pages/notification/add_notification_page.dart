@@ -134,6 +134,9 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
                             clipBehavior: Clip.antiAlias,
                             context: context,
                             builder: (BuildContext context) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                dateController.text = _date.formatDate();
+                              });
                               return Container(
                                 height: 300,
                                 color: UiColor.theme1Color,
@@ -163,6 +166,9 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
                             clipBehavior: Clip.antiAlias,
                             context: context,
                             builder: (BuildContext context) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                timeController.text = _time.formatTime();
+                              });
                               return Container(
                                 height: 300,
                                 color: UiColor.theme1Color,

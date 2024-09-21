@@ -3,7 +3,7 @@ import 'package:pet_app/services/api_service.dart';
 import 'package:pet_app/services/api_urls.dart';
 
 class MembersService {
-  static Future<Member> getMemberByEmail(String email) async {
+  static Future<Member?> getMemberByEmail(String email) async {
     final response = await ApiService().request(
       ApiUrls.members,
       method: DioMethod.get,

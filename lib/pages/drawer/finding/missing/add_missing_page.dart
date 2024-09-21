@@ -299,6 +299,9 @@ class _AddMissingSetp2State extends State<AddMissingSetp2> {
                     clipBehavior: Clip.antiAlias,
                     context: context,
                     builder: (BuildContext context) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        missingDateController.text = _datetime.formatDate();
+                      });
                       return Container(
                         height: 300,
                         color: UiColor.theme1Color,

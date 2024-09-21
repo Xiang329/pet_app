@@ -15,6 +15,8 @@ class PetVarietiesService {
       method: DioMethod.get,
     );
 
+    _petVarietyMap.clear();
+    _petVarietyMapByPcId.clear();
     final List<dynamic> data = response.data;
     for (var item in data) {
       PetVariety petVariety = PetVariety.fromJson(item);

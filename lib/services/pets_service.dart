@@ -13,7 +13,7 @@ class PetsService {
     return Pet.fromJson(response.data);
   }
 
-  static Future<Pet> getPetByCode(String code) async {
+  static Future<Pet?> getPetByCode(String code) async {
     final response = await ApiService().request(
       ApiUrls.pets,
       method: DioMethod.get,

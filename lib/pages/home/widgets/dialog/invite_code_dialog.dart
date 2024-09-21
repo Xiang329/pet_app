@@ -29,7 +29,7 @@ class _InviteCodeDialogState extends State<InviteCodeDialog> {
       final member = Provider.of<AppProvider>(context, listen: false).member;
       try {
         await PetsService.getPetByCode(codeController.text).then((pet) async {
-          for (var pm in pet.petManagementList) {
+          for (var pm in pet!.petManagementList) {
             if (member?.memberId == pm.member?.memberId) {
               throw ('無法新增自己的寵物');
             }

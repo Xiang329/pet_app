@@ -14,7 +14,6 @@ import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/services/pets_service.dart';
 import 'package:pet_app/services/social_media_message_board_service.dart';
 import 'package:pet_app/services/social_medias_service.dart';
-import 'package:pet_app/utils/inv_code_generator.dart';
 
 class AppProvider extends ChangeNotifier {
   String? _memberEmail;
@@ -176,30 +175,29 @@ class AppProvider extends ChangeNotifier {
     // }
   }
 
-  Future<void> addPet(dynamic submitData, {int retryCount = 0}) async {
-    const int maxRetries = 2;
+  Future<void> addPet(dynamic submitData) async {
+    Pet? pet;
     try {
-      await PetsService.getPetByCode(submitData['Pet_InvCode']).then((_) async {
-        // 如果 InvCdoe 已存在
-        debugPrint('Code已存在');
-        if (retryCount < maxRetries) {
-          submitData['Pet_InvCode'] = generateInvCode();
-          await addPet(submitData, retryCount: retryCount + 1);
-        } else {
+      try {
+        await PetsService.getPetByCode(submitData['Pet_InvCode']).then((p) {
+          pet = p;
           throw ('新增寵物失敗，請再試一次。');
-        }
-      }).then((_) async {
-        Pet pet = await PetsService.createPet(submitData);
-        final petManagementData = {
-          "PM_MemberID": _member?.memberId,
-          "PM_PetID": pet.petId,
-          "PM_Permissions": '1',
-        };
-        await PetManagementsService.createPetManagement(petManagementData);
-        await updateMember();
-      });
-
-      notifyListeners();
+        });
+      } catch (e) {
+        if (e == '新增寵物失敗，請再試一次。') rethrow;
+      }
+      if (pet == null) {
+        await PetsService.createPet(submitData).then((p) async {
+          final petManagementData = {
+            "PM_MemberID": _member?.memberId,
+            "PM_PetID": p.petId,
+            "PM_Permissions": '1',
+          };
+          await PetManagementsService.createPetManagement(petManagementData);
+          await updateMember();
+          notifyListeners();
+        });
+      }
     } catch (e) {
       rethrow;
     }

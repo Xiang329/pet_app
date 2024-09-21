@@ -12,6 +12,7 @@ class PetClassesService {
       method: DioMethod.get,
     );
 
+    _petClassesMap.clear();
     final List<dynamic> data = response.data;
     for (var item in data) {
       PetClass petClass = PetClass.fromJson(item);

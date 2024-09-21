@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_app/model/member.dart';
 import 'package:pet_app/services/members_service.dart';
 
 class AuthModel extends ChangeNotifier {
@@ -48,13 +49,24 @@ class AuthModel extends ChangeNotifier {
   Future<void> register(BuildContext context, String email, String password,
       Map<String, dynamic> userInfo) async {
     try {
-      await MembersService.createMember(userInfo).then((_) async {
-        await _auth.createUserWithEmailAndPassword(
-            email: email, password: password);
-        AuthCredential credential =
-            EmailAuthProvider.credential(email: email, password: password);
-        await _auth.signInWithCredential(credential);
-      });
+      Member? member;
+      try {
+        await MembersService.getMemberByEmail(email).then((m) {
+          member = m;
+          throw ('此帳號已被註冊。');
+        });
+      } catch (e) {
+        if (e == '此帳號已被註冊。') rethrow;
+      }
+      if (member == null) {
+        await MembersService.createMember(userInfo).then((_) async {
+          await _auth.createUserWithEmailAndPassword(
+              email: email, password: password);
+          AuthCredential credential =
+              EmailAuthProvider.credential(email: email, password: password);
+          await _auth.signInWithCredential(credential);
+        });
+      }
       // await _auth
       //     .createUserWithEmailAndPassword(email: email, password: password)
       //     .then((userCredential) async {

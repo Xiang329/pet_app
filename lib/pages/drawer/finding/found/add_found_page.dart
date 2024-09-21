@@ -269,6 +269,9 @@ class _AddFoundPageState extends State<AddFoundPage> {
                     clipBehavior: Clip.antiAlias,
                     context: context,
                     builder: (BuildContext context) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        foundDateController.text = _datetime.formatDate();
+                      });
                       return Container(
                         height: 300,
                         color: UiColor.theme1Color,

@@ -8,6 +8,7 @@ class OutlinedTextField extends StatefulWidget {
   final double hintSize;
   final TextEditingController controller;
   final TextInputType? keyboardType;
+  final Iterable<String>? autofillHints;
   final bool obscureText;
   final bool readOnly;
   final bool alignLabelWithHint;
@@ -26,6 +27,7 @@ class OutlinedTextField extends StatefulWidget {
     this.hintSize = 16.0,
     required this.controller,
     this.keyboardType,
+    this.autofillHints,
     this.obscureText = false,
     this.readOnly = false,
     this.alignLabelWithHint = false,
@@ -50,6 +52,7 @@ class _OutlinedTextFieldState extends State<OutlinedTextField> {
       style: const TextStyle(color: UiColor.text1Color),
       controller: widget.controller,
       keyboardType: widget.keyboardType,
+      autofillHints: widget.autofillHints,
       obscureText: widget.obscureText,
       readOnly: widget.readOnly,
       onTap: widget.onTap,

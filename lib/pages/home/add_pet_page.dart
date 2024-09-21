@@ -327,6 +327,9 @@ class _AddPetSetp2State extends State<AddPetSetp2> {
                       clipBehavior: Clip.antiAlias,
                       context: context,
                       builder: (BuildContext context) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          dateController.text = _datetime.formatDate();
+                        });
                         return Container(
                           height: 300,
                           color: UiColor.theme1Color,
