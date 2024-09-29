@@ -17,7 +17,12 @@ import 'package:provider/provider.dart';
 
 class EditExcretionPage extends StatefulWidget {
   final Excretion excretion;
-  const EditExcretionPage({super.key, required this.excretion});
+  final bool editable;
+  const EditExcretionPage({
+    super.key,
+    required this.excretion,
+    required this.editable,
+  });
 
   @override
   State<EditExcretionPage> createState() => _EditExcretionPageState();
@@ -47,6 +52,7 @@ class _EditExcretionPageState extends State<EditExcretionPage> {
   }
 
   Future submit() async {
+    if (!widget.editable) return;
     DateTime dateTime =
         DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
     final excretionData = {
@@ -141,6 +147,7 @@ class _EditExcretionPageState extends State<EditExcretionPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '排泄日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -170,6 +177,7 @@ class _EditExcretionPageState extends State<EditExcretionPage> {
                               readOnly: true,
                               labelText: '排泄時間',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -193,6 +201,7 @@ class _EditExcretionPageState extends State<EditExcretionPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: situationController,
                               validator: (value) => Validators.stringValidator(
                                   value,
@@ -231,7 +240,8 @@ class _EditExcretionPageState extends State<EditExcretionPage> {
                                   ),
                                 ),
                                 Visibility(
-                                  visible: picture != null,
+                                  visible:
+                                      (picture != null && widget.editable),
                                   child: Positioned(
                                     top: 0,
                                     right: 0,

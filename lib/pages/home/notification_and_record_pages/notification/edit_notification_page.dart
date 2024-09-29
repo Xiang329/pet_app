@@ -14,7 +14,12 @@ import 'package:provider/provider.dart';
 
 class EditNotificationPage extends StatefulWidget {
   final Advice advicd;
-  const EditNotificationPage({super.key, required this.advicd});
+  final bool editable;
+  const EditNotificationPage({
+    super.key,
+    required this.advicd,
+    required this.editable,
+  });
 
   @override
   State<EditNotificationPage> createState() => _EditNotificationPageState();
@@ -44,6 +49,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
   }
 
   Future submit() async {
+    if (!widget.editable) return;
     DateTime dateTime =
         DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
     final adviceData = {
@@ -132,6 +138,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: titleController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -147,6 +154,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '事項日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -176,6 +184,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '事項時間',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -199,6 +208,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: placeController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -208,6 +218,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: contentController,
                               validator: (value) => Validators.stringValidator(
                                 value,

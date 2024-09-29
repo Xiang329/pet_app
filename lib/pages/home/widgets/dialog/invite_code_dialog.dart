@@ -37,7 +37,7 @@ class _InviteCodeDialogState extends State<InviteCodeDialog> {
           final petManagementData = {
             "PM_MemberID": member?.memberId,
             "PM_PetID": pet.petId,
-            "PM_Permissions": '3',
+            "PM_Permissions": '2',
           };
           debugPrint(petManagementData.toString());
           await PetManagementsService.createPetManagement(petManagementData);

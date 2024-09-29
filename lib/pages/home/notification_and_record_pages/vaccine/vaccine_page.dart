@@ -87,6 +87,7 @@ class _VaccinePageState extends State<VaccinePage> {
                                 return CupertinoPageRoute(
                                   builder: (context) => EditVaccinePage(
                                     vaccine: vaccineList[index],
+                                    editable: widget.editable,
                                   ),
                                   settings: settings,
                                 );

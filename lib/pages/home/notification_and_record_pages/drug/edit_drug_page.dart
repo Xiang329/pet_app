@@ -14,7 +14,12 @@ import 'package:provider/provider.dart';
 
 class EditDrugPage extends StatefulWidget {
   final Drug drug;
-  const EditDrugPage({super.key, required this.drug});
+  final bool editable;
+  const EditDrugPage({
+    super.key,
+    required this.drug,
+    required this.editable,
+  });
 
   @override
   State<EditDrugPage> createState() => _EditDrugPageState();
@@ -44,6 +49,7 @@ class _EditDrugPageState extends State<EditDrugPage> {
   }
 
   Future submit() async {
+    if (!widget.editable) return;
     final drugDate = {
       'Drug_ID': widget.drug.drugId,
       'Drug_PetID': widget.drug.drugPetId,
@@ -130,6 +136,7 @@ class _EditDrugPageState extends State<EditDrugPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: nameController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -139,6 +146,7 @@ class _EditDrugPageState extends State<EditDrugPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: dosageController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -155,6 +163,7 @@ class _EditDrugPageState extends State<EditDrugPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '服用日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -184,6 +193,7 @@ class _EditDrugPageState extends State<EditDrugPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '下次服用日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,

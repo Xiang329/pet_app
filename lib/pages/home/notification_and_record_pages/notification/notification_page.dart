@@ -88,6 +88,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                 return CupertinoPageRoute(
                                     builder: (context) => EditNotificationPage(
                                           advicd: adviceList[index],
+                                          editable: widget.editable,
                                         ),
                                     settings: settings);
                               },

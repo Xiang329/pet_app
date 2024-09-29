@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
@@ -68,7 +69,9 @@ class _ShowInviteCodeDialogState extends State<ShowInviteCodeDialog> {
                     textAlign: TextAlign.center,
                     suffixIcon: IconButton(
                       icon: SvgPicture.asset(AssetsImages.copySvg),
-                      onPressed: () {},
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: codeController.text));
+                      },
                     ),
                     labelSize: 14,
                     height: 10,

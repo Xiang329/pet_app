@@ -14,7 +14,12 @@ import 'package:provider/provider.dart';
 
 class EditMedicalPage extends StatefulWidget {
   final Medical medical;
-  const EditMedicalPage({super.key, required this.medical});
+  final bool editable;
+  const EditMedicalPage({
+    super.key,
+    required this.medical,
+    required this.editable,
+  });
 
   @override
   State<EditMedicalPage> createState() => _EditMedicalPageState();
@@ -30,6 +35,7 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
   DateTime _datetime = DateTime.now();
 
   Future submit() async {
+    if (!widget.editable) return;
     final medicalData = {
       'Medical_ID': widget.medical.medicalId,
       'Medical_PetID': widget.medical.medicalPetId,
@@ -127,6 +133,7 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: clinicController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -142,6 +149,7 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '看診日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -165,6 +173,7 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: diseaseController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -174,6 +183,7 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: doctorOrdersController,
                               validator: (value) => Validators.stringValidator(
                                 value,

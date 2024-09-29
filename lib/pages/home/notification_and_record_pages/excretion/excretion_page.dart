@@ -88,6 +88,7 @@ class _ExcretionPageState extends State<ExcretionPage> {
                                 return CupertinoPageRoute(
                                   builder: (context) => EditExcretionPage(
                                     excretion: excretionList[index],
+                                    editable: widget.editable,
                                   ),
                                   settings: settings,
                                 );

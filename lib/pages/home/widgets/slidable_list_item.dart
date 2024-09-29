@@ -135,7 +135,7 @@ class _SlidableItemState extends State<SlidableItem> {
           color: UiColor.textinputColor,
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: (widget.editable) ? widget.onTap : () {},
+            onTap: widget.onTap,
             child: (widget.editable)
                 ? Slidable(
                     // 如果 Slidable 可以關閉，需指定一個不重複的 Key

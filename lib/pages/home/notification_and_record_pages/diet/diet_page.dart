@@ -88,6 +88,7 @@ class _DietPageState extends State<DietPage> {
                                 return CupertinoPageRoute(
                                   builder: (context) => EditDietPage(
                                     diet: dietList[index],
+                                    editable: widget.editable,
                                   ),
                                   settings: settings,
                                 );

@@ -88,6 +88,7 @@ class _DrugPageState extends State<DrugPage> {
                                 return CupertinoPageRoute(
                                   builder: (context) => EditDrugPage(
                                     drug: drugList[index],
+                                    editable: widget.editable,
                                   ),
                                   settings: settings,
                                 );

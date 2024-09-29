@@ -14,7 +14,12 @@ import 'package:provider/provider.dart';
 
 class EditDietPage extends StatefulWidget {
   final Diet diet;
-  const EditDietPage({super.key, required this.diet});
+  final bool editable;
+  const EditDietPage({
+    super.key,
+    required this.diet,
+    required this.editable,
+  });
 
   @override
   State<EditDietPage> createState() => _EditDietPageState();
@@ -42,6 +47,7 @@ class _EditDietPageState extends State<EditDietPage> {
   }
 
   Future submit() async {
+    if (!widget.editable) return;
     DateTime dateTime =
         DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
     final dietData = {
@@ -135,6 +141,7 @@ class _EditDietPageState extends State<EditDietPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '用餐日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -164,6 +171,7 @@ class _EditDietPageState extends State<EditDietPage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '用餐時間',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -187,6 +195,7 @@ class _EditDietPageState extends State<EditDietPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: quantityController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -197,6 +206,7 @@ class _EditDietPageState extends State<EditDietPage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: situationController,
                               validator: (value) => Validators.stringValidator(
                                 value,

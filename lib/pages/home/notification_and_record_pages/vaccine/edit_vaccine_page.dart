@@ -15,7 +15,12 @@ import 'package:provider/provider.dart';
 
 class EditVaccinePage extends StatefulWidget {
   final Vaccine vaccine;
-  const EditVaccinePage({super.key, required this.vaccine});
+  final bool editable;
+  const EditVaccinePage({
+    super.key,
+    required this.vaccine,
+    required this.editable,
+  });
 
   @override
   State<EditVaccinePage> createState() => _EditVaccinePageState();
@@ -50,6 +55,7 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
   }
 
   Future submit() async {
+    if (!widget.editable) return;
     final vaccineData = {
       'Vaccine_ID': widget.vaccine.vaccineId,
       'Vaccine_PetID': widget.vaccine.vaccinePetId,
@@ -142,6 +148,7 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: nameController,
                               validator: (value) => Validators.stringValidator(
                                 value,
@@ -157,6 +164,7 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '施打日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -186,6 +194,7 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
                                   Validators.dateTimeValidator(value),
                               labelText: '下次施打日期',
                               onTap: () {
+                                if (!widget.editable) return;
                                 showModalBottomSheet(
                                   clipBehavior: Clip.antiAlias,
                                   context: context,
@@ -218,6 +227,7 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
                               items: const ['是', '否'],
                               value: selectedReaction,
                               onChanged: (String? value) {
+                                if (!widget.editable) return;
                                 setState(() {
                                   selectedReaction = value;
                                 });
@@ -225,6 +235,7 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
                             ),
                             const SizedBox(height: 25),
                             FilledLeftLabelTextField(
+                              readOnly: !widget.editable,
                               controller: symptomController,
                               validator: (value) => Validators.stringValidator(
                                 value,

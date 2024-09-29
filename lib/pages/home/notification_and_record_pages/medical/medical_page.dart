@@ -88,6 +88,7 @@ class _MedicalPageState extends State<MedicalPage> {
                                 return CupertinoPageRoute(
                                   builder: (context) => EditMedicalPage(
                                     medical: medicalList[index],
+                                    editable: widget.editable,
                                   ),
                                   settings: settings,
                                 );
