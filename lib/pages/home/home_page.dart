@@ -28,7 +28,28 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    loadData = Provider.of<AppProvider>(context, listen: false).updateMember();
+    loadData = Provider.of<AppProvider>(context, listen: false)
+        .updateMember()
+        .catchError((e) {
+      if (!mounted) return;
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('錯誤'),
+            content: Text(e.toString()),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text('確定'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    },);
     todayStart = DateTime(now.year, now.month, now.day);
     sevenDaysLater = todayStart.add(const Duration(days: 7));
   }

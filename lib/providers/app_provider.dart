@@ -67,11 +67,15 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> updateMember({String? email}) async {
-    _member = await MembersService.getMemberByEmail(email ?? _memberEmail!);
-    _petManagement.clear();
-    _petManagement.addAll(_member!.petManagementList);
-    getPetNotifications();
-    notifyListeners();
+    try {
+      _member = await MembersService.getMemberByEmail(email ?? _memberEmail!);
+      _petManagement.clear();
+      _petManagement.addAll(_member!.petManagementList);
+      getPetNotifications();
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   void getPetNotifications() {

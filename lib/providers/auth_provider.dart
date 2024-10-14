@@ -151,14 +151,16 @@ class AuthModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteUserAccount(String password) async {
+  Future<void> deleteUserAccount(int memberId, String password) async {
     final userEmail = _user!.email;
     try {
       final credential =
           EmailAuthProvider.credential(email: userEmail!, password: password);
-      await _user
-          ?.reauthenticateWithCredential(credential)
-          .then((value) => _user?.delete());
+      await _user?.reauthenticateWithCredential(credential).then(
+            (value) => _user?.delete().then((_) async {
+              await MembersService.deleteMember(memberId);
+            }),
+          );
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential') {

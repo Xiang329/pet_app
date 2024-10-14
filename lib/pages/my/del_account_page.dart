@@ -3,6 +3,8 @@ import 'package:pet_app/common/app_assets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:pet_app/model/member.dart';
+import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/providers/auth_provider.dart';
 import 'package:pet_app/utils/validators.dart';
 import 'package:pet_app/widgets/custom_button.dart';
@@ -23,6 +25,7 @@ class _DelAccountPageState extends State<DelAccountPage> {
   bool _isHidden = true;
 
   Future submit() async {
+    Member? member = Provider.of<AppProvider>(context, listen: false).member;
     if (_formKey.currentState!.validate()) {
       showCupertinoDialog(
         context: context,
@@ -49,7 +52,8 @@ class _DelAccountPageState extends State<DelAccountPage> {
                   Navigator.of(context).pop();
                   try {
                     await Provider.of<AuthModel>(context, listen: false)
-                        .deleteUserAccount(passwordController.text)
+                        .deleteUserAccount(
+                            member!.memberId, passwordController.text)
                         .then((_) {
                       Navigator.of(_scaffoldKey.currentContext!,
                               rootNavigator: true)
