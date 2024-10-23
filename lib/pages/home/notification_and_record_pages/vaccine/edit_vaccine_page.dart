@@ -65,9 +65,8 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
           ? _nextDatetime.toIso8601String()
           : null,
       'Vaccine_reaction': selectedReaction == '是',
-      'Vaccine_symptom': symptomController.text.isNotEmpty
-          ? symptomController.text.isNotEmpty
-          : null,
+      'Vaccine_symptom':
+          symptomController.text.isNotEmpty ? symptomController.text : null,
     };
     debugPrint(vaccineData.toString());
     try {
