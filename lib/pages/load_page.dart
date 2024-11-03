@@ -25,7 +25,7 @@ class _LoadPageState extends State<LoadPage> {
   }
 
   Future<void> loadPage() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(milliseconds: 2500));
     setState(() {
       _isLoading = false;
     });
@@ -39,10 +39,15 @@ class _LoadPageState extends State<LoadPage> {
         if (_isLoading) {
           return Scaffold(
             backgroundColor: UiColor.theme2Color,
-            body: Image.asset(
-              AssetsImages.loadLogoJpg,
-              width: MediaQuery.of(context).size.width,
-              fit: BoxFit.fill,
+            body: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Image.asset(
+                  AssetsImages.loadLogoJpg,
+                  width: double.infinity,
+                  fit: BoxFit.fill,
+                ),
+              ),
             ),
           );
         }

@@ -78,10 +78,13 @@ class _PetItemState extends State<PetItem> {
                           child: SvgPicture.asset(AssetsImages.managementSvg),
                         ),
                         CustomSlidableAction(
-                          onPressed: (context) {
-                            Provider.of<AppProvider>(context, listen: false)
+                          onPressed: (context) async {
+                            await Provider.of<AppProvider>(context,
+                                    listen: false)
                                 .deletePet(
-                                    petManagemnet.pmId, petManagemnet.pmPetId);
+                              petManagemnet.pmId,
+                              petManagemnet.pmPetId,
+                            );
                           },
                           backgroundColor: UiColor.errorColor,
                           foregroundColor: Colors.white,

@@ -13,8 +13,7 @@ import 'package:pet_app/widgets/outlined_text_field.dart';
 import 'package:provider/provider.dart';
 
 class AddPostPage extends StatefulWidget {
-  final int memberId;
-  const AddPostPage({super.key, required this.memberId});
+  const AddPostPage({super.key});
 
   @override
   State<AddPostPage> createState() => _AddPostPageState();
@@ -26,10 +25,11 @@ class _AddPostPageState extends State<AddPostPage> {
   Uint8List? picture;
 
   Future submit() async {
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
     DateTime dateTime = DateTime.now();
     BuildContext? dialogContext;
     final socialMediaData = {
-      'SM_MemberID': widget.memberId,
+      'SM_MemberID': appProvider.memberId,
       'SM_Image': picture,
       'SM_Content': contentController.text,
       'SM_DateTime': dateTime.toIso8601String(),

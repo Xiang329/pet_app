@@ -50,7 +50,6 @@ class _AllFoundListPageState extends State<AllFoundListPage>
         if (widget.filteredFoundList.isEmpty) {
           return const Center(child: EmptyData());
         }
-        isFiltering = false;
         return ListView.separated(
           physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics()),

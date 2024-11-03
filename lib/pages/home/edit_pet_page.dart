@@ -68,7 +68,7 @@ class _EditPetPageState extends State<EditPetPage> {
     weightController.text = widget.pet.petWeight.toString();
     // ligationController.text = widget.pet.petLigation ? "是" : "否";
     bloodController.text = widget.pet.petBlood;
-    picture = widget.pet.petMugShot;
+    picture = widget.pet.petMugShot.isEmpty ? null : widget.pet.petMugShot;
 
     selectedPetClassId = petClassesMap.entries
         .firstWhereOrNull((element) => element.value == widget.pet.className)

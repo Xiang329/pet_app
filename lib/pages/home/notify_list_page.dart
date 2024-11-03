@@ -35,21 +35,18 @@ class _NotifyListPageState extends State<NotifyListPage> {
   Widget build(BuildContext context) {
     today.clear();
     withinSevenDays.clear();
-    final allNotifications =
-        Provider.of<AppProvider>(context).allNotifications;
+    final allNotifications = Provider.of<AppProvider>(context).allNotifications;
 
     // 日期分類
     for (var notification in allNotifications) {
-      if (notification.dateTime != null) {
-        DateTime notificationDate = notification.dateTime!;
+      DateTime notificationDate = notification.dateTime;
 
-        if (notificationDate.isAfter(todayStart) &&
-            notificationDate.isBefore(todayEnd)) {
-          today.add(notification);
-        } else if (notificationDate.isAfter(todayEnd) &&
-            notificationDate.isBefore(sevenDaysLater)) {
-          withinSevenDays.add(notification);
-        }
+      if (notificationDate.isAfter(todayStart) &&
+          notificationDate.isBefore(todayEnd)) {
+        today.add(notification);
+      } else if (notificationDate.isAfter(todayEnd) &&
+          notificationDate.isBefore(sevenDaysLater)) {
+        withinSevenDays.add(notification);
       }
     }
     return Scaffold(

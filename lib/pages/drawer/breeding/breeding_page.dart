@@ -146,7 +146,6 @@ class _BreedingPageState extends State<BreedingPage> {
                     if (allBreedingsList.isEmpty) {
                       return const Center(child: EmptyData());
                     }
-                    isFiltering = false;
                     return ListView.separated(
                       physics: const BouncingScrollPhysics(
                           parent: AlwaysScrollableScrollPhysics()),

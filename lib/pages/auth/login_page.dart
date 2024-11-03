@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,15 @@ class _LoginPageState extends State<LoginPage> {
           },
         );
       }
+    }
+  }
+
+  @override
+  void initState() {
+    if (kDebugMode) {
+      emailController.text = 'test0000@email.com';
+      passwordController.text = '123456';
+      super.initState();
     }
   }
 

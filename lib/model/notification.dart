@@ -9,7 +9,7 @@ class CommingSoonNotification {
   Uint8List? petMugShot;
   PetManagement petManagement;
   String title;
-  DateTime? dateTime;
+  DateTime dateTime;
 
   CommingSoonNotification({
     required this.model,
@@ -18,6 +18,6 @@ class CommingSoonNotification {
     this.petMugShot,
     required this.petManagement,
     required this.title,
-    this.dateTime,
+    required this.dateTime,
   });
 }

@@ -51,7 +51,6 @@ class _AllMissingListPageState extends State<AllMissingListPage>
         if (widget.filteredMissingList.isEmpty) {
           return const Center(child: EmptyData());
         }
-        isFiltering = false;
         return ListView.separated(
           physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics()),

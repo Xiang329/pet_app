@@ -177,7 +177,6 @@ class _AdoptionPageState extends State<AdoptionPage> {
                   if (filteredAnimals.isEmpty) {
                     return const Center(child: EmptyData());
                   }
-                  isFiltering = false;
                   return ListView.separated(
                     controller: _scrollController,
                     physics: const BouncingScrollPhysics(

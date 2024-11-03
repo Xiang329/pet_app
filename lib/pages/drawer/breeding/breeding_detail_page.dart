@@ -148,32 +148,66 @@ class _BreedingDetailPageState extends State<BreedingDetailPage> {
                                   ),
                                 ),
                                 onTap: () async {
-                                  try {
-                                    await Provider.of<AppProvider>(context,
-                                            listen: false)
-                                        .deletePetBreeding(widget.breedingID);
-                                    if (!context.mounted) return;
-                                    Navigator.of(context, rootNavigator: true)
-                                        .pop();
-                                  } catch (e) {
-                                    showCupertinoDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return CupertinoAlertDialog(
-                                          title: const Text('錯誤'),
-                                          content: Text(e.toString()),
-                                          actions: <Widget>[
-                                            CupertinoDialogAction(
-                                              child: const Text('確定'),
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
+                                  showCupertinoDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return CupertinoAlertDialog(
+                                        title: const Text('是否確定刪除？'),
+                                        actions: <Widget>[
+                                          CupertinoDialogAction(
+                                            child: const Text('取消'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                          CupertinoDialogAction(
+                                            child: const Text(
+                                              '刪除',
+                                              style: TextStyle(
+                                                color: UiColor.errorColor,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                             ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
+                                            onPressed: () async {
+                                              try {
+                                                await Provider.of<AppProvider>(
+                                                        context,
+                                                        listen: false)
+                                                    .deletePetBreeding(
+                                                        widget.breedingID);
+                                                if (!context.mounted) return;
+                                                Navigator.of(context,
+                                                        rootNavigator: true)
+                                                    .pop();
+                                              } catch (e) {
+                                                showCupertinoDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return CupertinoAlertDialog(
+                                                      title: const Text('錯誤'),
+                                                      content:
+                                                          Text(e.toString()),
+                                                      actions: <Widget>[
+                                                        CupertinoDialogAction(
+                                                          child:
+                                                              const Text('確定'),
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
                                 },
                               ),
                             ],

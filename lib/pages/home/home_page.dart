@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:pet_app/common/app_colors.dart';
-import 'package:pet_app/model/notification.dart';
 import 'package:pet_app/pages/home/notify_list_page.dart';
 import 'package:pet_app/pages/home/pet_list_page.dart';
 import 'package:pet_app/pages/home/widgets/upcoming_notification_list_item.dart';
@@ -19,10 +18,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  DateTime now = DateTime.now();
-  late DateTime todayStart;
-  late DateTime sevenDaysLater;
-  final List<CommingSoonNotification> withinSevenDays = [];
   Future? loadData;
 
   @override
@@ -30,48 +25,34 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     loadData = Provider.of<AppProvider>(context, listen: false)
         .updateMember()
-        .catchError((e) {
-      if (!mounted) return;
-      showCupertinoDialog(
-        context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            title: const Text('錯誤'),
-            content: Text(e.toString()),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text('確定'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    },);
-    todayStart = DateTime(now.year, now.month, now.day);
-    sevenDaysLater = todayStart.add(const Duration(days: 7));
+        .catchError(
+      (e) {
+        if (!mounted) return;
+        showCupertinoDialog(
+          context: context,
+          builder: (context) {
+            return CupertinoAlertDialog(
+              title: const Text('錯誤'),
+              content: Text(e.toString()),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text('確定'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    withinSevenDays.clear();
     final petManagement = Provider.of<AppProvider>(context).petManagement;
     final allNotifications = Provider.of<AppProvider>(context).allNotifications;
-
-    // 日期分類
-    for (var notification in allNotifications) {
-      if (notification.dateTime != null) {
-        DateTime notificationDate = notification.dateTime!;
-
-        if (notificationDate.isAfter(todayStart) &&
-            notificationDate.isBefore(sevenDaysLater)) {
-          withinSevenDays.add(notification);
-        }
-      }
-    }
-
     return Scaffold(
       backgroundColor: UiColor.theme1Color,
       body: SingleChildScrollView(
@@ -155,7 +136,7 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.w500),
                   ),
                   Visibility(
-                    visible: withinSevenDays.length > 3 ? true : false,
+                    visible: allNotifications.length > 3 ? true : false,
                     child: IconButton(
                       icon: const Icon(
                         Icons.keyboard_arrow_right,
@@ -180,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
                   }
-                  if (withinSevenDays.isEmpty) {
+                  if (allNotifications.isEmpty) {
                     return const Center(child: EmptyData(text: '尚無通知'));
                   }
                   return SlidableAutoCloseBehavior(
@@ -189,12 +170,12 @@ class _HomePageState extends State<HomePage> {
                     child: ListView.separated(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      itemCount: withinSevenDays.length <= 3
-                          ? withinSevenDays.length
+                      itemCount: allNotifications.length <= 3
+                          ? allNotifications.length
                           : 3,
                       itemBuilder: (context, index) {
                         return UpcomingNotificationListItem(
-                          notification: withinSevenDays[index],
+                          notification: allNotifications[index],
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) =>

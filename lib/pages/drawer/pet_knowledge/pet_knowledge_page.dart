@@ -114,7 +114,6 @@ class _PetKnowledgePageState extends State<PetKnowledgePage> {
                 if (filteredArticle.isEmpty) {
                   return const Center(child: EmptyData());
                 }
-                isFiltering = false;
                 return ListView.separated(
                   physics: const BouncingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics()),

@@ -81,15 +81,8 @@ class AppProvider extends ChangeNotifier {
   void getPetNotifications() {
     _allNotifications.clear();
     for (var value in _petManagement) {
-      var pet = value.pet;
+      final pet = value.pet;
       if (pet != null) {
-        // _allNotifications.addAll(pet.adviceList);
-        // _allNotifications.addAll(pet.drugList);
-        // for (var vaccine in pet.vaccineList) {
-        //   if (vaccine.vaccineNextDate != null) {
-        //     _allNotifications.add(vaccine);
-        //   }
-        // }
         for (var advice in pet.adviceList) {
           _allNotifications.add(CommingSoonNotification(
             model: advice,
@@ -121,62 +114,24 @@ class AppProvider extends ChangeNotifier {
               petMugShot: pet.petMugShot,
               petManagement: value,
               title: vaccine.vaccineName,
-              dateTime: vaccine.vaccineNextDate,
+              dateTime: vaccine.vaccineNextDate!,
             ));
           }
         }
       }
     }
-
     // 按日期排列(遞增)
-    // _allNotifications.sort((a, b) {
-    //   DateTime? dateTimeA, dateTimeB;
-    //   if (a is Advice) {
-    //     dateTimeA = a.adviceDateTime;
-    //   } else if (a is Drug) {
-    //     dateTimeA = a.drugNextDate;
-    //   } else if (a is Vaccine) {
-    //     if (a.vaccineNextDate != null) {
-    //       dateTimeA = a.vaccineNextDate!;
-    //     }
-    //   }
+    allNotifications.sort((a, b) => a.dateTime.compareTo(b.dateTime));
 
-    //   if (b is Advice) {
-    //     dateTimeB = b.adviceDateTime;
-    //   } else if (b is Drug) {
-    //     dateTimeB = b.drugNextDate;
-    //   } else if (b is Vaccine) {
-    //     if (b.vaccineNextDate != null) {
-    //       dateTimeB = b.vaccineNextDate!;
-    //     }
-    //   }
-
-    //   if (dateTimeA != null && dateTimeB != null) {
-    //     return dateTimeA.compareTo(dateTimeB);
-    //   } else {
-    //     return 0;
-    //   }
-    // });
-    // 按日期排列(遞增)
-    allNotifications.sort((a, b) {
-      if (a.dateTime != null && b.dateTime != null) {
-        return a.dateTime!.compareTo(b.dateTime!);
-      } else {
-        return 0;
-      }
+    // 移除七天外日期
+    final DateTime now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final sevenDaysLater = todayStart.add(const Duration(days: 7));
+    allNotifications.removeWhere((notification) {
+      DateTime notificationDate = notification.dateTime;
+      return notificationDate.isBefore(todayStart) ||
+          notificationDate.isAfter(sevenDaysLater);
     });
-
-    // 列出列表
-    // print(_allNotifications);
-    // for (var element in allNotifications) {
-    //   if (element is Advice) {
-    //     print(element.adviceDateTime);
-    //   } else if (element is Drug) {
-    //     print(element.drugNextDate);
-    //   } else if (element is Vaccine) {
-    //     print(element.vaccineNextDate);
-    //   }
-    // }
   }
 
   Future<void> addPet(dynamic submitData) async {
@@ -209,7 +164,7 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> editPet(int petId, dynamic data) async {
     await PetsService.updatePet(petId, data);
-    updateMember();
+    await updateMember();
     notifyListeners();
   }
 
@@ -222,13 +177,16 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> fetchAllPetBreedings() async {
     try {
-      await BreedingsService.getBreedings().then((breedings) async {
-        _allBreedingsList.clear();
-        for (var breeding in breedings) {
-          final pet = await PetsService.getPetById(breeding.breedingPetId);
-          _allBreedingsList.add((breeding, pet));
-        }
-      });
+      final breedings = await BreedingsService.getBreedings();
+
+      // 建立非同步請求列表
+      final futures = breedings.map((breeding) async {
+        final pet = await PetsService.getPetById(breeding.breedingPetId);
+        return (breeding, pet);
+      }).toList();
+
+      _allBreedingsList.clear();
+      _allBreedingsList.addAll(await Future.wait(futures));
       notifyListeners();
     } catch (e) {
       rethrow;
@@ -237,14 +195,16 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> fetchMyPetBreedings() async {
     try {
-      await BreedingsService.getBreedingsByMemberId(_member!.memberId)
-          .then((breedings) async {
-        _myBreedingList.clear();
-        for (var breeding in breedings) {
-          final pet = await PetsService.getPetById(breeding.breedingPetId);
-          _myBreedingList.add((breeding, pet));
-        }
+      final breedings =
+          await BreedingsService.getBreedingsByMemberId(_member!.memberId);
+
+      // 建立非同步請求列表
+      final futures = breedings.map((breeding) async {
+        final pet = await PetsService.getPetById(breeding.breedingPetId);
+        return (breeding, pet);
       });
+      _myBreedingList.clear();
+      _myBreedingList.addAll(await Future.wait(futures));
       notifyListeners();
     } catch (e) {
       rethrow;
@@ -283,35 +243,45 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> fetchAllPetFindings() async {
-    await FindingsService.getFindings().then((findings) async {
-      _allMissingsList.clear();
-      _allFoundsList.clear();
-      for (var finding in findings) {
-        if (finding.findingLostOrFound) {
-          final pet = await PetsService.getPetById(finding.findingPetId!);
-          _allMissingsList.add((finding, pet));
-        } else {
-          _allFoundsList.add(finding);
-        }
+    final findings = await FindingsService.getFindings();
+
+    _allMissingsList.clear();
+    _allFoundsList.clear();
+
+    final futures = findings.map((finding) async {
+      if (finding.findingLostOrFound) {
+        final pet = await PetsService.getPetById(finding.findingPetId!);
+        return (finding, pet);
+      } else {
+        _allFoundsList.add(finding);
+        return null;
       }
     });
+
+    final results = await Future.wait(futures);
+    _allMissingsList.addAll(results.whereType<(Finding, Pet)>());
     notifyListeners();
   }
 
   Future<void> fetchMyPetFindings() async {
-    await FindingsService.getFindingsByMemberId(_member!.memberId)
-        .then((findings) async {
-      _myMissingsList.clear();
-      _myFoundsList.clear();
-      for (var finding in findings) {
-        if (finding.findingLostOrFound) {
-          final pet = await PetsService.getPetById(finding.findingPetId!);
-          _myMissingsList.add((finding, pet));
-        } else {
-          _myFoundsList.add(finding);
-        }
+    final findings =
+        await FindingsService.getFindingsByMemberId(_member!.memberId);
+
+    _myMissingsList.clear();
+    _myFoundsList.clear();
+
+    final futures = findings.map((finding) async {
+      if (finding.findingLostOrFound) {
+        final pet = await PetsService.getPetById(finding.findingPetId!);
+        return (finding, pet);
+      } else {
+        _myFoundsList.add(finding);
+        return null;
       }
     });
+
+    final result = await Future.wait(futures);
+    _myMissingsList.addAll(result.whereType<(Finding, Pet)>());
     notifyListeners();
   }
 
@@ -375,29 +345,16 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> fetchCurrentMessageBoards(int smId) async {
-    List<(SocialMediaMessageBoard, Member)> tmpMessageBoards = [];
-    Set<int> tmpMemberIds = {};
-    Map<int, Member> tmpMembers = {};
+    final socialMedia = await SocialMediasService.getSocialMediaById(smId);
 
-    await SocialMediasService.getSocialMediaById(smId)
-        .then((socialMedia) async {
-      for (var messageBoard in socialMedia.messageBoards) {
-        int memberId = messageBoard.mbMemberId;
+    final futures = socialMedia.messageBoards.map((messageBoard) async {
+      int memberId = messageBoard.mbMemberId;
+      final member = await MembersService.getMemberById(memberId);
+      return (messageBoard, member);
+    }).toList();
 
-        // 檢查 memberId 是否已經請求過，用以緩存 Member
-        if (tmpMemberIds.contains(memberId)) {
-          tmpMessageBoards.add((messageBoard, tmpMembers[memberId]!));
-        } else {
-          tmpMemberIds.add(memberId);
-          await MembersService.getMemberById(memberId).then((member) {
-            tmpMembers[memberId] = member;
-            tmpMessageBoards.add((messageBoard, member));
-          });
-        }
-      }
-      _messageBoards.clear();
-      _messageBoards.addAll(tmpMessageBoards);
-    });
+    _messageBoards.clear();
+    _messageBoards.addAll(await Future.wait(futures));
     notifyListeners();
   }
 
