@@ -8,6 +8,7 @@ import 'package:pet_app/pages/drawer/finding/found/edit_my_found_page.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/findings_service.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:provider/provider.dart';
 
 class FoundDetailPage extends StatefulWidget {
@@ -139,32 +140,22 @@ class _FoundDetailPageState extends State<FoundDetailPage> {
                                 ),
                               ),
                               onTap: () async {
-                                try {
-                                  await Provider.of<AppProvider>(context,
-                                          listen: false)
-                                      .deletePetFinding(widget.findingId);
-                                  if (!context.mounted) return;
-                                  Navigator.of(context, rootNavigator: true)
-                                      .pop();
-                                } catch (e) {
-                                  showCupertinoDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return CupertinoAlertDialog(
-                                        title: const Text('錯誤'),
-                                        content: Text(e.toString()),
-                                        actions: <Widget>[
-                                          CupertinoDialogAction(
-                                            child: const Text('確定'),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                }
+                                CommonDialog.showConfirmDialog(
+                                  context: context,
+                                  titleText: '是否確定刪除？',
+                                  onConfirmPressed: () async {
+                                    try {
+                                      await Provider.of<AppProvider>(context,
+                                              listen: false)
+                                          .deletePetFinding(widget.findingId);
+                                      if (!context.mounted) return;
+                                      Navigator.of(context, rootNavigator: true)
+                                          .pop();
+                                    } catch (e) {
+                                      rethrow;
+                                    }
+                                  },
+                                );
                               },
                             ),
                           ],

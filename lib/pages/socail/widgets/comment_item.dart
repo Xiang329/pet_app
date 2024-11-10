@@ -8,6 +8,7 @@ import 'package:pet_app/model/social_media_message_board.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/validators.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:pet_app/widgets/filled_text_field.dart';
 import 'package:provider/provider.dart';
 
@@ -97,7 +98,7 @@ class _CommentItemState extends State<CommentItem> {
                   }),
                   const SizedBox(width: 15),
                   Builder(
-                    builder: (context) {
+                    builder: (slidableContext) {
                       return SizedBox(
                         height: 50,
                         width: 50,
@@ -109,18 +110,26 @@ class _CommentItemState extends State<CommentItem> {
                           child: SvgPicture.asset(AssetsImages.deleteSvg),
                           onPressed: () async {
                             // 根據Builder的context
-                            Slidable.of(context)!.close();
-                            try {
-                              await Provider.of<AppProvider>(context, listen: false)
-                                  .deleteMessageBoard(widget.socialMediaId,
-                                      widget.socialMediaMessage.mbId);
-                            } catch (e) {
-                              debugPrint('$e');
-                            }
+                            await Slidable.of(slidableContext)!.close();
+                            if (!context.mounted) return;
+                            CommonDialog.showConfirmDialog(
+                              context: context,
+                              titleText: '是否確定刪除？',
+                              onConfirmPressed: () async {
+                                try {
+                                  await Provider.of<AppProvider>(context,
+                                          listen: false)
+                                      .deleteMessageBoard(widget.socialMediaId,
+                                          widget.socialMediaMessage.mbId);
+                                } catch (e) {
+                                  rethrow;
+                                }
+                              },
+                            );
                           },
                         ),
                       );
-                    }
+                    },
                   ),
                   const SizedBox(width: 15),
                 ],

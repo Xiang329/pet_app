@@ -157,9 +157,9 @@ class AuthModel extends ChangeNotifier {
       final credential =
           EmailAuthProvider.credential(email: userEmail!, password: password);
       await _user?.reauthenticateWithCredential(credential).then(
-            (value) => _user?.delete().then((_) async {
-              await MembersService.deleteMember(memberId);
-            }),
+            (value) async => await MembersService.deleteMember(memberId).then(
+              (_) async => await _user?.delete(),
+            ),
           );
       notifyListeners();
     } on FirebaseAuthException catch (e) {

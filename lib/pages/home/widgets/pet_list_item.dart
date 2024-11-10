@@ -9,6 +9,7 @@ import 'package:pet_app/pages/home/pet_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:pet_app/widgets/rich_text_divider.dart';
 import 'package:provider/provider.dart';
 
@@ -79,11 +80,24 @@ class _PetItemState extends State<PetItem> {
                         ),
                         CustomSlidableAction(
                           onPressed: (context) async {
-                            await Provider.of<AppProvider>(context,
-                                    listen: false)
-                                .deletePet(
-                              petManagemnet.pmId,
-                              petManagemnet.pmPetId,
+                            CommonDialog.showConfirmDialog(
+                              context: context,
+                              titleText: '是否確定刪除？',
+                              onConfirmPressed: () async {
+                                try {
+                                  await Provider.of<AppProvider>(context,
+                                          listen: false)
+                                      .deletePet(
+                                    petManagemnet.pmId,
+                                    petManagemnet.pmPetId,
+                                  );
+                                  if (!context.mounted) return;
+                                  Navigator.of(context, rootNavigator: true)
+                                      .pop();
+                                } catch (e) {
+                                  rethrow;
+                                }
+                              },
                             );
                           },
                           backgroundColor: UiColor.errorColor,

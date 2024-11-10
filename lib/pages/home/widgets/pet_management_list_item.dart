@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:pet_app/model/pet_management.dart';
 import 'package:pet_app/services/pet_managements_service.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 
 class PetManagementListItem extends StatefulWidget {
   final PetManagement coManager;
@@ -25,20 +26,31 @@ class PetManagementListItem extends StatefulWidget {
 class _PetManagementListItemState extends State<PetManagementListItem> {
   // 必須確保更新狀態，否則出錯 A dismissed Slidable widget is still part of the tree.
   // 只需在回調中移除相應的 Pet 對象
-  void removeData() async {
-    await PetManagementsService.deletePetManagement(widget.coManager.pmId);
-    widget.reloadPage();
-    const snackBar = SnackBar(
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.green,
-      content: Center(child: Text('共同管理人刪除成功')),
-      duration: Duration(seconds: 1),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20))),
+  void removeData() {
+    CommonDialog.showConfirmDialog(
+      context: context,
+      titleText: '是否確定刪除？',
+      onConfirmPressed: () async {
+        try {
+          await PetManagementsService.deletePetManagement(
+              widget.coManager.pmId);
+          widget.reloadPage();
+          const snackBar = SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green,
+            content: Center(child: Text('共同管理人刪除成功')),
+            duration: Duration(seconds: 1),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+          );
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        } catch (e) {
+          rethrow;
+        }
+      },
     );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override

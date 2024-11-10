@@ -30,7 +30,6 @@ class NotificationAndRecordPanel extends StatelessWidget {
               final bool isOverMaxWidth = 1000 > constraints.maxWidth;
               return Wrap(
                 alignment: WrapAlignment.spaceBetween,
-                runAlignment: WrapAlignment.start,
                 spacing: 20,
                 // 垂直間距
                 runSpacing: 20,

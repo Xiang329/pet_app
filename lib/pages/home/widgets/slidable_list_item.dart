@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
@@ -18,6 +17,7 @@ import 'package:pet_app/services/excretions_serivce.dart';
 import 'package:pet_app/services/medicals_service.dart';
 import 'package:pet_app/services/vaccines_serivce.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:provider/provider.dart';
 
 class SlidableItem extends StatefulWidget {
@@ -49,42 +49,33 @@ class _SlidableItemState extends State<SlidableItem> {
   // 必須確保更新狀態，否則出錯 A dismissed Slidable widget is still part of the tree.
   // 只需在回調中移除相應的 Pet 對象
   void removeData() async {
-    try {
-      if (widget.advice != null) {
-        await AdvicesService.deleteAdvice(widget.advice!.adviceId);
-      } else if (widget.diet != null) {
-        await DietsService.deleteDiet(widget.diet!.dietId);
-      } else if (widget.drug != null) {
-        await DrugsService.deleteDrug(widget.drug!.drugId);
-      } else if (widget.excretion != null) {
-        await ExcretionsService.deleteExcretion(widget.excretion!.excretionId);
-      } else if (widget.medical != null) {
-        await MedicalsService.deleteMedical(widget.medical!.medicalId);
-      } else if (widget.vaccine != null) {
-        await VaccinesService.deleteVaccine(widget.vaccine!.vaccineId);
-      }
-      // ignore: use_build_context_synchronously
-      await Provider.of<AppProvider>(context, listen: false).updateMember();
-    } catch (e) {
-      if (!mounted) return;
-      showCupertinoDialog(
-        context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            title: const Text('錯誤'),
-            content: Text(e.toString()),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text('確定'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
+    CommonDialog.showConfirmDialog(
+      context: context,
+      titleText: '是否確定刪除？',
+      onConfirmPressed: () async {
+        try {
+          if (widget.advice != null) {
+            await AdvicesService.deleteAdvice(widget.advice!.adviceId);
+          } else if (widget.diet != null) {
+            await DietsService.deleteDiet(widget.diet!.dietId);
+          } else if (widget.drug != null) {
+            await DrugsService.deleteDrug(widget.drug!.drugId);
+          } else if (widget.excretion != null) {
+            await ExcretionsService.deleteExcretion(
+                widget.excretion!.excretionId);
+          } else if (widget.medical != null) {
+            await MedicalsService.deleteMedical(widget.medical!.medicalId);
+          } else if (widget.vaccine != null) {
+            await VaccinesService.deleteVaccine(widget.vaccine!.vaccineId);
+          }
+          if (!mounted) return;
+          await Provider.of<AppProvider>(context, listen: false).updateMember();
+        } catch (e) {
+          if (!mounted) return;
+          rethrow;
+        }
+      },
+    );
   }
 
   String getTitle() {

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
@@ -13,6 +12,7 @@ import 'package:pet_app/services/advices_serivce.dart';
 import 'package:pet_app/services/durgs_serivce.dart';
 import 'package:pet_app/services/vaccines_serivce.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:pet_app/widgets/rich_text_divider.dart';
 import 'package:provider/provider.dart';
 
@@ -31,36 +31,26 @@ class UpcomingNotificationListItem extends StatefulWidget {
 class _UpcomingNotificationListItemState
     extends State<UpcomingNotificationListItem> {
   Future<void> removeData() async {
-    try {
-      if (widget.notification.model is Advice) {
-        await AdvicesService.deleteAdvice(widget.notification.id);
-      } else if (widget.notification.model is Drug) {
-        await DrugsService.deleteDrug(widget.notification.id);
-      } else if (widget.notification.model is Vaccine) {
-        await VaccinesService.deleteVaccine(widget.notification.id);
-      }
-      // ignore: use_build_context_synchronously
-      await Provider.of<AppProvider>(context, listen: false).updateMember();
-    } catch (e) {
-      if (!mounted) return;
-      showCupertinoDialog(
-        context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            title: const Text('錯誤'),
-            content: Text(e.toString()),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: const Text('確定'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
+    CommonDialog.showConfirmDialog(
+      context: context,
+      titleText: '是否確定刪除？',
+      onConfirmPressed: () async {
+        try {
+          if (widget.notification.model is Advice) {
+            await AdvicesService.deleteAdvice(widget.notification.id);
+          } else if (widget.notification.model is Drug) {
+            await DrugsService.deleteDrug(widget.notification.id);
+          } else if (widget.notification.model is Vaccine) {
+            await VaccinesService.deleteVaccine(widget.notification.id);
+          }
+          if (!mounted) return;
+          await Provider.of<AppProvider>(context, listen: false).updateMember();
+        } catch (e) {
+          if (!mounted) return;
+          rethrow;
+        }
+      },
+    );
   }
 
   @override

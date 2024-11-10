@@ -8,6 +8,7 @@ import 'package:pet_app/pages/socail/comment_page.dart';
 import 'package:pet_app/pages/socail/edit_my_post_page.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:provider/provider.dart';
 
 class PostItem extends StatefulWidget {
@@ -107,13 +108,19 @@ class _PostItemState extends State<PostItem> {
                           ),
                         ),
                         onTap: () async {
-                          try {
-                            await Provider.of<AppProvider>(context,
-                                    listen: false)
-                                .deleteSocialMedia(widget.socialMedia.smId);
-                          } catch (e) {
-                            debugPrint(e.toString());
-                          }
+                          CommonDialog.showConfirmDialog(
+                            context: context,
+                            titleText: '是否確定刪除？',
+                            onConfirmPressed: () async {
+                              try {
+                                await Provider.of<AppProvider>(context,
+                                        listen: false)
+                                    .deleteSocialMedia(widget.socialMedia.smId);
+                              } catch (e) {
+                                rethrow;
+                              }
+                            },
+                          );
                         },
                       ),
                     ],

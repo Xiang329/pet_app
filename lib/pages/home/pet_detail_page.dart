@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:pet_app/pages/home/edit_pet_page.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:pet_app/widgets/rich_text_divider.dart';
 import 'package:pet_app/pages/home/widgets/notification_and_record_panel.dart';
 import 'package:pet_app/pages/home/widgets/underline_text.dart';
@@ -191,34 +192,24 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                   ),
                                 ),
                                 onTap: () async {
-                                  try {
-                                    await Provider.of<AppProvider>(context,
-                                            listen: false)
-                                        .deletePet(petManagemnet.pmId,
-                                            petManagemnet.pmPetId);
-                                    if (!context.mounted) return;
-                                    Navigator.of(context, rootNavigator: true)
-                                        .pop();
-                                  } catch (e) {
-                                    if (!context.mounted) return;
-                                    showCupertinoDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return CupertinoAlertDialog(
-                                          title: const Text('錯誤'),
-                                          content: Text(e.toString()),
-                                          actions: <Widget>[
-                                            CupertinoDialogAction(
-                                              child: const Text('確定'),
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
+                                  CommonDialog.showConfirmDialog(
+                                    context: context,
+                                    titleText: '是否確定刪除？',
+                                    onConfirmPressed: () async {
+                                      try {
+                                        await Provider.of<AppProvider>(context,
+                                                listen: false)
+                                            .deletePet(petManagemnet.pmId,
+                                                petManagemnet.pmPetId);
+                                        if (!context.mounted) return;
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .pop();
+                                      } catch (e) {
+                                        rethrow;
+                                      }
+                                    },
+                                  );
                                 },
                               ),
                             ],
