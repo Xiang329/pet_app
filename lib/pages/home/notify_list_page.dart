@@ -44,8 +44,7 @@ class _NotifyListPageState extends State<NotifyListPage> {
       if (notificationDate.isAfter(todayStart) &&
           notificationDate.isBefore(todayEnd)) {
         today.add(notification);
-      } else if (notificationDate.isAfter(todayEnd) &&
-          notificationDate.isBefore(sevenDaysLater)) {
+      } else {
         withinSevenDays.add(notification);
       }
     }
