@@ -28,10 +28,27 @@ class PetItem extends StatefulWidget {
 }
 
 class _PetItemState extends State<PetItem> {
-  @override
-  Widget build(BuildContext context) {
+  void removeData() async {
     final petManagemnet = Provider.of<AppProvider>(context, listen: false)
         .petManagement[widget.petIndex];
+    CommonDialog.showConfirmDialog(
+      context: context,
+      titleText: '是否確定刪除？',
+      onConfirmPressed: () async {
+        try {
+          await Provider.of<AppProvider>(context, listen: false)
+              .deletePet(petManagemnet.pmId, petManagemnet.pmPetId);
+        } catch (e) {
+          rethrow;
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final petManagemnet =
+        Provider.of<AppProvider>(context).petManagement[widget.petIndex];
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
@@ -79,27 +96,7 @@ class _PetItemState extends State<PetItem> {
                           child: SvgPicture.asset(AssetsImages.managementSvg),
                         ),
                         CustomSlidableAction(
-                          onPressed: (context) async {
-                            CommonDialog.showConfirmDialog(
-                              context: context,
-                              titleText: '是否確定刪除？',
-                              onConfirmPressed: () async {
-                                try {
-                                  await Provider.of<AppProvider>(context,
-                                          listen: false)
-                                      .deletePet(
-                                    petManagemnet.pmId,
-                                    petManagemnet.pmPetId,
-                                  );
-                                  if (!context.mounted) return;
-                                  Navigator.of(context, rootNavigator: true)
-                                      .pop();
-                                } catch (e) {
-                                  rethrow;
-                                }
-                              },
-                            );
-                          },
+                          onPressed: (context) => removeData(),
                           backgroundColor: UiColor.errorColor,
                           foregroundColor: Colors.white,
                           child: SvgPicture.asset(AssetsImages.deleteSvg),

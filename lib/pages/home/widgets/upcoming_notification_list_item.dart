@@ -30,7 +30,7 @@ class UpcomingNotificationListItem extends StatefulWidget {
 
 class _UpcomingNotificationListItemState
     extends State<UpcomingNotificationListItem> {
-  Future<void> removeData() async {
+  void removeData() async {
     CommonDialog.showConfirmDialog(
       context: context,
       titleText: '是否確定刪除？',
