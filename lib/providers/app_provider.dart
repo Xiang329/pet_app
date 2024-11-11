@@ -168,9 +168,16 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deletePet(int pmId, int petId) async {
-    await PetManagementsService.deletePetManagement(pmId);
-    await PetsService.deletePet(petId);
+  Future<void> deletePet(int pmId, int petId, String pmPermissions) async {
+    if (pmPermissions == '1') {
+      final pet = await PetsService.getPetById(petId);
+      for (var pm in pet.petManagementList) {
+        await PetManagementsService.deletePetManagement(pm.pmId);
+      }
+      await PetsService.deletePet(petId);
+    } else {
+      await PetManagementsService.deletePetManagement(pmId);
+    }
     updateMember();
     notifyListeners();
   }

@@ -36,8 +36,11 @@ class _PetItemState extends State<PetItem> {
       titleText: '是否確定刪除？',
       onConfirmPressed: () async {
         try {
-          await Provider.of<AppProvider>(context, listen: false)
-              .deletePet(petManagemnet.pmId, petManagemnet.pmPetId);
+          await Provider.of<AppProvider>(context, listen: false).deletePet(
+            petManagemnet.pmId,
+            petManagemnet.pmPetId,
+            petManagemnet.pmPermissions,
+          );
         } catch (e) {
           rethrow;
         }

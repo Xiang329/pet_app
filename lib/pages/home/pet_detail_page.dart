@@ -199,8 +199,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                       try {
                                         await Provider.of<AppProvider>(context,
                                                 listen: false)
-                                            .deletePet(petManagemnet.pmId,
-                                                petManagemnet.pmPetId);
+                                            .deletePet(
+                                          petManagemnet.pmId,
+                                          petManagemnet.pmPetId,
+                                          petManagemnet.pmPermissions,
+                                        );
                                         if (!context.mounted) return;
                                         Navigator.of(context,
                                                 rootNavigator: true)
