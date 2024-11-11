@@ -27,8 +27,8 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
   void initState() {
     super.initState();
     _center = LatLng(
-      widget.place.location.latitude,
-      widget.place.location.longitude,
+      widget.place.location.latitude.toDouble(),
+      widget.place.location.longitude.toDouble(),
     );
   }
 
@@ -115,68 +115,58 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                // height: 260,
-                child: Card(
-                  color: UiColor.textinputColor,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '營業時間',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: UiColor.text1Color,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              widget.place.regularOpeningHours == null
-                                  ? const Text(
-                                      '店家未提供營業時間',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: UiColor.text2Color,
-                                      ),
-                                    )
-                                  : ListView.separated(
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemCount: widget
-                                          .place
-                                          .regularOpeningHours!
-                                          .weekdayDescriptions
-                                          .length,
-                                      itemBuilder: (context, index) {
-                                        return Text(
-                                          widget.place.regularOpeningHours!
-                                              .weekdayDescriptions[index]
-                                              .replaceFirst(':', '　')
-                                              .replaceAll(',', '\n${'　' * 4}'),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: UiColor.text2Color,
-                                          ),
-                                        );
-                                      },
-                                      separatorBuilder:
-                                          (BuildContext context, int index) =>
-                                              const SizedBox(height: 5),
-                                    ),
-                            ],
-                          ),
+              Card(
+                color: UiColor.textinputColor,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '營業時間',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: UiColor.text1Color,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 10),
+                      widget.place.regularOpeningHours == null
+                          ? const Text(
+                              '店家未提供營業時間',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: UiColor.text2Color,
+                              ),
+                            )
+                          : ListView.separated(
+                              physics:
+                                  const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: widget
+                                  .place
+                                  .regularOpeningHours!
+                                  .weekdayDescriptions
+                                  .length,
+                              itemBuilder: (context, index) {
+                                return Text(
+                                  widget.place.regularOpeningHours!
+                                      .weekdayDescriptions[index]
+                                      .replaceFirst(':', '　')
+                                      .replaceAll(',', '\n${'　' * 4}'),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: UiColor.text2Color,
+                                  ),
+                                );
+                              },
+                              separatorBuilder:
+                                  (BuildContext context, int index) =>
+                                      const SizedBox(height: 5),
+                            ),
+                    ],
                   ),
                 ),
               ),
@@ -190,7 +180,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                   child: GoogleMap(
                     // Web版 我的位置暫時不支援
                     myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
+                    myLocationButtonEnabled: false,
                     onCameraMove: null,
                     onMapCreated: _onMapCreated,
                     initialCameraPosition: CameraPosition(

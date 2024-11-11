@@ -11,7 +11,7 @@ class PlacesResponse {
     return PlacesResponse(
       places:
           (json['places'] as List).map((item) => Place.fromJson(item)).toList(),
-      nextPageToken: json['nextPageToken'] ?? '',
+      nextPageToken: json['nextPageToken'],
     );
   }
 
@@ -27,8 +27,8 @@ class Place {
   final String? nationalPhoneNumber;
   final String formattedAddress;
   final Location location;
-  final double? rating;
-  final int? userRatingCount;
+  final num? rating;
+  final num? userRatingCount;
   final String googleMapsUri;
   final RegularOpeningHours? regularOpeningHours;
   final DisplayName displayName;
@@ -73,8 +73,8 @@ class Place {
 }
 
 class Location {
-  final double latitude;
-  final double longitude;
+  final num latitude;
+  final num longitude;
 
   Location({
     required this.latitude,
