@@ -27,6 +27,7 @@ class _PetManagementPageState extends State<PetManagementPage> {
   late Member mainManager;
   late Pet pet;
   late Future _loadData;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -35,6 +36,8 @@ class _PetManagementPageState extends State<PetManagementPage> {
   }
 
   Future loadData() async {
+    if (_isLoading) return;
+    _isLoading = true;
     try {
       coManagers.clear();
       pet = await PetsService.getPetById(widget.petId);
@@ -69,6 +72,8 @@ class _PetManagementPageState extends State<PetManagementPage> {
         },
       );
       rethrow;
+    } finally {
+      _isLoading = false;
     }
   }
 
@@ -201,10 +206,10 @@ class _PetManagementPageState extends State<PetManagementPage> {
                       return PetManagementListItem(
                         coManager: coManagers[index],
                         editable: memberId == mainManager.memberId,
-                        reloadPage: () {
-                          setState(() {
-                            _loadData = loadData();
-                          });
+                        reloadPage: () async {
+                          await loadData();
+                          if (!context.mounted) return;
+                          setState(() {});
                         },
                       );
                     },

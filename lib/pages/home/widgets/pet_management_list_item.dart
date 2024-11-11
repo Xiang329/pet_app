@@ -24,8 +24,6 @@ class PetManagementListItem extends StatefulWidget {
 }
 
 class _PetManagementListItemState extends State<PetManagementListItem> {
-  // 必須確保更新狀態，否則出錯 A dismissed Slidable widget is still part of the tree.
-  // 只需在回調中移除相應的 Pet 對象
   void removeData() {
     CommonDialog.showConfirmDialog(
       context: context,
@@ -63,18 +61,15 @@ class _PetManagementListItemState extends State<PetManagementListItem> {
         child: Card(
           clipBehavior: Clip.antiAlias,
           color: UiColor.textinputColor,
-          child: widget.editable
-              ? Slidable(
-                  // 如果 Slidable 可以關閉，需指定一個不重複的 Key
-                  key: UniqueKey(),
+          child: Slidable(
+            // 如果 Slidable 可以關閉，需指定一個不重複的 Key
+            key: UniqueKey(),
 
-                  // 右測滑塊設置
-                  endActionPane: ActionPane(
+            // 右測滑塊設置
+            endActionPane: widget.editable
+                ? ActionPane(
                     // 寬度比例
                     extentRatio: 0.25,
-                    // dismissible: DismissiblePane(onDismissed: () {
-                    //   removeData();
-                    // }),
                     motion: const DrawerMotion(),
                     children: [
                       CustomSlidableAction(
@@ -84,11 +79,10 @@ class _PetManagementListItemState extends State<PetManagementListItem> {
                         child: SvgPicture.asset(AssetsImages.deleteSvg),
                       ),
                     ],
-                  ),
-                  child: petAdminListTile(
-                      widget.coManager, access, widget.editable),
-                )
-              : petAdminListTile(widget.coManager, access, widget.editable),
+                  )
+                : null,
+            child: petAdminListTile(widget.coManager, access, widget.editable),
+          ),
         ),
       ),
     );
@@ -118,8 +112,8 @@ class _PetManagementListItemState extends State<PetManagementListItem> {
                       color: UiColor.text1Color,
                     )),
                 const SizedBox(height: 5),
-                IgnorePointer(
-                  ignoring: !editable,
+                AbsorbPointer(
+                  absorbing: !editable,
                   child: CustomSlidingSegmentedControl<int>(
                     initialValue: access,
                     height: 34,
@@ -144,16 +138,17 @@ class _PetManagementListItemState extends State<PetManagementListItem> {
                     duration: const Duration(milliseconds: 400),
                     // 動畫過渡曲線
                     // curve: Curves.easeInOutCubic,
-                    onValueChanged: (v) async {
+                    onValueChanged: (value) async {
                       final petManagementData = {
                         "PM_ID": coManager.pmId,
                         "PM_MemberID": coManager.member!.memberId,
                         "PM_PetID": coManager.pmPetId,
-                        "PM_Permissions": v,
+                        "PM_Permissions": value,
                       };
                       print(petManagementData);
                       await PetManagementsService.updatePetManagement(
                           coManager.pmId, petManagementData);
+                      widget.reloadPage();
                     },
                   ),
                 ),
