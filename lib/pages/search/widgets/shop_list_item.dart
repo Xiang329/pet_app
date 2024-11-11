@@ -44,7 +44,6 @@ class _ShopItemState extends State<ShopItem> {
             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -62,10 +62,6 @@ class _HospitalItemState extends State<HospitalItem> {
                     ),
                     IconButton(
                       onPressed: () {
-                        // LauncherUtils.openMap(
-                        //   widget.hospital.location.latitude,
-                        //   widget.hospital.location.longitude,
-                        // );
                         LauncherUtils.openUrl(widget.hospital.googleMapsUri);
                       },
                       icon: SvgPicture.asset(AssetsImages.mapSvg),
