@@ -21,7 +21,7 @@ class CustomButton extends StatefulWidget {
 
 class _CustomButtonState extends State<CustomButton> {
   bool _isLoading = false;
-  
+
   Future<void> _onPressed() async {
     if (widget.asyncOnPressed != null) {
       setState(() {
@@ -39,7 +39,10 @@ class _CustomButtonState extends State<CustomButton> {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: _isLoading ? null : _onPressed,
+      onPressed: _isLoading ||
+              (widget.asyncOnPressed == null && widget.asyncOnPressed == null)
+          ? null
+          : _onPressed,
       style: TextButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         backgroundColor: (widget.errorStyle == true)
