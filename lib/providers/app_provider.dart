@@ -7,13 +7,19 @@ import 'package:pet_app/model/pet.dart';
 import 'package:pet_app/model/pet_management.dart';
 import 'package:pet_app/model/social_media.dart';
 import 'package:pet_app/model/social_media_message_board.dart';
+import 'package:pet_app/services/advices_serivce.dart';
 import 'package:pet_app/services/breedings_service.dart';
+import 'package:pet_app/services/diets_serivce.dart';
+import 'package:pet_app/services/durgs_serivce.dart';
+import 'package:pet_app/services/excretions_serivce.dart';
 import 'package:pet_app/services/findings_service.dart';
+import 'package:pet_app/services/medicals_service.dart';
 import 'package:pet_app/services/members_service.dart';
 import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/services/pets_service.dart';
 import 'package:pet_app/services/social_media_message_board_service.dart';
 import 'package:pet_app/services/social_medias_service.dart';
+import 'package:pet_app/services/vaccines_serivce.dart';
 
 class AppProvider extends ChangeNotifier {
   String? _memberEmail;
@@ -169,17 +175,37 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> deletePet(int pmId, int petId, String pmPermissions) async {
-    if (pmPermissions == '1') {
-      final pet = await PetsService.getPetById(petId);
-      for (var pm in pet.petManagementList) {
-        await PetManagementsService.deletePetManagement(pm.pmId);
+    try {
+      if (pmPermissions == '1') {
+        final pet = await PetsService.getPetById(petId);
+
+        final List<Future> futures = [];
+        futures.addAll(pet.adviceList
+            .map((advice) => AdvicesService.deleteAdvice(advice.adviceId)));
+        futures.addAll(
+            pet.dietList.map((diet) => DietsService.deleteDiet(diet.dietId)));
+        futures.addAll(
+            pet.drugList.map((drug) => DrugsService.deleteDrug(drug.drugId)));
+        futures.addAll(pet.medicalList.map(
+            (medical) => MedicalsService.deleteMedical(medical.medicalId)));
+        futures.addAll(pet.vaccineList.map(
+            (vaccine) => VaccinesService.deleteVaccine(vaccine.vaccineId)));
+        futures.addAll(pet.excretionList.map((excretion) =>
+            ExcretionsService.deleteExcretion(excretion.excretionId)));
+        futures.addAll(pet.petManagementList
+            .map((pm) => PetManagementsService.deletePetManagement(pm.pmId)));
+
+        await Future.wait(futures);
+        await PetsService.deletePet(petId);
+      } else {
+        await PetManagementsService.deletePetManagement(pmId);
       }
-      await PetsService.deletePet(petId);
-    } else {
-      await PetManagementsService.deletePetManagement(pmId);
+    } catch (e) {
+      rethrow;
+    } finally {
+      updateMember();
+      notifyListeners();
     }
-    updateMember();
-    notifyListeners();
   }
 
   Future<void> fetchAllPetBreedings() async {
