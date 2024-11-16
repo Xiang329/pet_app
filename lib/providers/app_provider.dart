@@ -219,12 +219,17 @@ class AppProvider extends ChangeNotifier {
 
       // 建立非同步請求列表
       final futures = breedings.map((breeding) async {
-        final pet = await PetsService.getPetById(breeding.breedingPetId);
-        return (breeding, pet);
+        try {
+          final pet = await PetsService.getPetById(breeding.breedingPetId);
+          return (breeding, pet);
+        } catch (e) {
+          return null;
+        }
       }).toList();
 
+      final result = await Future.wait(futures);
       _allBreedingsList.clear();
-      _allBreedingsList.addAll(await Future.wait(futures));
+      _allBreedingsList.addAll(result.whereType<(Breeding, Pet)>());
       notifyListeners();
     } catch (e) {
       rethrow;
@@ -238,11 +243,17 @@ class AppProvider extends ChangeNotifier {
 
       // 建立非同步請求列表
       final futures = breedings.map((breeding) async {
-        final pet = await PetsService.getPetById(breeding.breedingPetId);
-        return (breeding, pet);
+        try {
+          final pet = await PetsService.getPetById(breeding.breedingPetId);
+          return (breeding, pet);
+        } catch (e) {
+          return null;
+        }
       });
+
+      final result = await Future.wait(futures);
       _myBreedingList.clear();
-      _myBreedingList.addAll(await Future.wait(futures));
+      _myBreedingList.addAll(result.whereType<(Breeding, Pet)>());
       notifyListeners();
     } catch (e) {
       rethrow;
@@ -287,11 +298,15 @@ class AppProvider extends ChangeNotifier {
     _allFoundsList.clear();
 
     final futures = findings.map((finding) async {
-      if (finding.findingLostOrFound) {
-        final pet = await PetsService.getPetById(finding.findingPetId!);
-        return (finding, pet);
-      } else {
-        _allFoundsList.add(finding);
+      try {
+        if (finding.findingLostOrFound) {
+          final pet = await PetsService.getPetById(finding.findingPetId!);
+          return (finding, pet);
+        } else {
+          _allFoundsList.add(finding);
+          return null;
+        }
+      } catch (e) {
         return null;
       }
     });
@@ -309,11 +324,15 @@ class AppProvider extends ChangeNotifier {
     _myFoundsList.clear();
 
     final futures = findings.map((finding) async {
-      if (finding.findingLostOrFound) {
-        final pet = await PetsService.getPetById(finding.findingPetId!);
-        return (finding, pet);
-      } else {
-        _myFoundsList.add(finding);
+      try {
+        if (finding.findingLostOrFound) {
+          final pet = await PetsService.getPetById(finding.findingPetId!);
+          return (finding, pet);
+        } else {
+          _myFoundsList.add(finding);
+          return null;
+        }
+      } catch (e) {
         return null;
       }
     });
