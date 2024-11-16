@@ -1,6 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/model/pet.dart';
+import 'package:pet_app/model/pet_management.dart';
+import 'package:pet_app/model/vaccine.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/vaccine/add_vaccine_page.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/vaccine/edit_vaccine_page.dart';
 import 'package:pet_app/providers/app_provider.dart';
@@ -12,12 +16,10 @@ import 'package:pet_app/widgets/empty_data.dart';
 import 'package:provider/provider.dart';
 
 class VaccinePage extends StatefulWidget {
-  final int petIndex;
-  final bool editable;
+  final int pmId;
   const VaccinePage({
     super.key,
-    required this.petIndex,
-    required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -27,14 +29,18 @@ class VaccinePage extends StatefulWidget {
 class _VaccinePageState extends State<VaccinePage> {
   @override
   Widget build(BuildContext context) {
-    final petId = Provider.of<AppProvider>(context)
-        .petManagement[widget.petIndex]
-        .pet!
-        .petId;
-    final vaccineList = Provider.of<AppProvider>(context)
-        .petManagement[widget.petIndex]
-        .pet!
-        .vaccineList;
+    PetManagement? petManagemnet;
+    Pet? pet;
+    List<Vaccine> vaccineList = [];
+    bool editable = false;
+    final appProvider = Provider.of<AppProvider>(context);
+    petManagemnet = appProvider.petManagement
+        .firstWhereOrNull((petManagement) => petManagement.pmId == widget.pmId);
+    if (petManagemnet != null) {
+      pet = petManagemnet.pet;
+      vaccineList = petManagemnet.pet!.vaccineList;
+      editable = petManagemnet.pmPermissions != '3';
+    }
 
     return Scaffold(
       backgroundColor: UiColor.theme1Color,
@@ -70,7 +76,8 @@ class _VaccinePageState extends State<VaccinePage> {
                   itemBuilder: (context, index) {
                     return SlidableItem(
                       vaccine: vaccineList[index],
-                      editable: widget.editable,
+                      editable: editable,
+                      pmId: widget.pmId,
                       onTap: () {
                         showModalBottomSheet(
                           clipBehavior: Clip.antiAlias,
@@ -79,7 +86,7 @@ class _VaccinePageState extends State<VaccinePage> {
                           context: context,
                           constraints: BoxConstraints(
                             maxHeight:
-                                MediaQuery.of(context).size.height * 0.90,
+                                MediaQuery.of(context).size.height * 0.70,
                           ),
                           builder: (BuildContext context) {
                             return Navigator(
@@ -87,9 +94,9 @@ class _VaccinePageState extends State<VaccinePage> {
                                 return CupertinoPageRoute(
                                   builder: (context) => EditVaccinePage(
                                     vaccine: vaccineList[index],
-                                    editable: widget.editable,
+                                    editable: editable,
+                                    pmId: widget.pmId,
                                   ),
-                                  settings: settings,
                                 );
                               },
                             );
@@ -106,7 +113,7 @@ class _VaccinePageState extends State<VaccinePage> {
           ),
         );
       }),
-      floatingActionButton: !widget.editable
+      floatingActionButton: !editable
           ? null
           : FloatingActionButton(
               backgroundColor: UiColor.theme2Color,
@@ -118,14 +125,16 @@ class _VaccinePageState extends State<VaccinePage> {
                   isScrollControlled: true,
                   context: context,
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.90,
+                    maxHeight: MediaQuery.of(context).size.height * 0.70,
                   ),
                   builder: (BuildContext context) {
                     return Navigator(
                       onGenerateRoute: (settings) {
                         return CupertinoPageRoute(
-                          builder: (context) => AddVaccinePage(petId: petId),
-                          settings: settings,
+                          builder: (context) => AddVaccinePage(
+                            petId: pet!.petId,
+                            pmId: widget.pmId,
+                          ),
                         );
                       },
                     );

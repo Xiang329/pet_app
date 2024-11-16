@@ -5,6 +5,7 @@ import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/advices_serivce.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/validators.dart';
 import 'package:pet_app/widgets/custom_button.dart';
@@ -13,9 +14,11 @@ import 'package:provider/provider.dart';
 
 class AddNotificationPage extends StatefulWidget {
   final int petId;
+  final int pmId;
   const AddNotificationPage({
     super.key,
     required this.petId,
+    required this.pmId,
   });
 
   @override
@@ -33,6 +36,14 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
   DateTime _date = DateTime.now();
   DateTime _time = DateTime.now();
 
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
+
   Future submit() async {
     final DateTime dateTime =
         DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
@@ -46,6 +57,9 @@ class _AddNotificationPageState extends State<AddNotificationPage> {
     debugPrint(adviceData.toString());
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
         await AdvicesService.createAdvice(adviceData).then((_) async {
           if (!mounted) return;
           await Provider.of<AppProvider>(context, listen: false).updateMember();

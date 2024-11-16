@@ -1,6 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/model/advice.dart';
+import 'package:pet_app/model/pet.dart';
+import 'package:pet_app/model/pet_management.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/notification/add_notification_page.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/notification/edit_notification_page.dart';
 import 'package:pet_app/providers/app_provider.dart';
@@ -12,12 +16,10 @@ import 'package:pet_app/widgets/empty_data.dart';
 import 'package:provider/provider.dart';
 
 class NotificationPage extends StatefulWidget {
-  final int petIndex;
-  final bool editable;
+  final int pmId;
   const NotificationPage({
     super.key,
-    required this.petIndex,
-    required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -27,14 +29,18 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage> {
   @override
   Widget build(BuildContext context) {
-    final petId = Provider.of<AppProvider>(context)
-        .petManagement[widget.petIndex]
-        .pet!
-        .petId;
-    final adviceList = Provider.of<AppProvider>(context)
-        .petManagement[widget.petIndex]
-        .pet!
-        .adviceList;
+    PetManagement? petManagemnet;
+    Pet? pet;
+    List<Advice> adviceList = [];
+    bool editable = false;
+    final appProvider = Provider.of<AppProvider>(context);
+    petManagemnet = appProvider.petManagement
+        .firstWhereOrNull((petManagement) => petManagement.pmId == widget.pmId);
+    if (petManagemnet != null) {
+      pet = petManagemnet.pet;
+      adviceList = petManagemnet.pet!.adviceList;
+      editable = petManagemnet.pmPermissions != '3';
+    }
 
     return Scaffold(
       backgroundColor: UiColor.theme1Color,
@@ -71,7 +77,8 @@ class _NotificationPageState extends State<NotificationPage> {
                   itemBuilder: (context, index) {
                     return SlidableItem(
                       advice: adviceList[index],
-                      editable: widget.editable,
+                      editable: editable,
+                      pmId: widget.pmId,
                       onTap: () {
                         showModalBottomSheet(
                           clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -80,17 +87,18 @@ class _NotificationPageState extends State<NotificationPage> {
                           context: context,
                           constraints: BoxConstraints(
                             maxHeight:
-                                MediaQuery.of(context).size.height * 0.90,
+                                MediaQuery.of(context).size.height * 0.70,
                           ),
                           builder: (BuildContext context) {
                             return Navigator(
                               onGenerateRoute: (settings) {
                                 return CupertinoPageRoute(
-                                    builder: (context) => EditNotificationPage(
-                                          advicd: adviceList[index],
-                                          editable: widget.editable,
-                                        ),
-                                    settings: settings);
+                                  builder: (context) => EditNotificationPage(
+                                    advicd: adviceList[index],
+                                    editable: editable,
+                                    pmId: widget.pmId,
+                                  ),
+                                );
                               },
                             );
                           },
@@ -106,7 +114,7 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
         );
       }),
-      floatingActionButton: !widget.editable
+      floatingActionButton: !editable
           ? null
           : FloatingActionButton(
               backgroundColor: UiColor.theme2Color,
@@ -118,15 +126,16 @@ class _NotificationPageState extends State<NotificationPage> {
                   isScrollControlled: true,
                   context: context,
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.90,
+                    maxHeight: MediaQuery.of(context).size.height * 0.70,
                   ),
                   builder: (BuildContext context) {
                     return Navigator(
                       onGenerateRoute: (settings) {
                         return CupertinoPageRoute(
-                          builder: (context) =>
-                              AddNotificationPage(petId: petId),
-                          settings: settings,
+                          builder: (context) => AddNotificationPage(
+                            petId: pet!.petId,
+                            pmId: widget.pmId,
+                          ),
                         );
                       },
                     );

@@ -88,11 +88,13 @@ class AppProvider extends ChangeNotifier {
     _allNotifications.clear();
     for (var value in _petManagement) {
       final pet = value.pet;
+      final pmId = value.pmId;
       if (pet != null) {
         for (var advice in pet.adviceList) {
           _allNotifications.add(CommingSoonNotification(
             model: advice,
             id: advice.adviceId,
+            pmId: pmId,
             petName: pet.petName,
             petMugShot: pet.petMugShot,
             petManagement: value,
@@ -104,6 +106,7 @@ class AppProvider extends ChangeNotifier {
           _allNotifications.add(CommingSoonNotification(
             model: drug,
             id: drug.drugId,
+            pmId: pmId,
             petName: pet.petName,
             petMugShot: pet.petMugShot,
             petManagement: value,
@@ -116,6 +119,7 @@ class AppProvider extends ChangeNotifier {
             _allNotifications.add(CommingSoonNotification(
               model: vaccine,
               id: vaccine.vaccineId,
+              pmId: pmId,
               petName: pet.petName,
               petMugShot: pet.petMugShot,
               petManagement: value,
@@ -179,6 +183,7 @@ class AppProvider extends ChangeNotifier {
       if (pmPermissions == '1') {
         final pet = await PetsService.getPetById(petId);
 
+        // 建立非同步請求列表
         final List<Future> futures = [];
         futures.addAll(pet.adviceList
             .map((advice) => AdvicesService.deleteAdvice(advice.adviceId)));

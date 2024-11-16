@@ -5,6 +5,7 @@ import 'package:pet_app/model/pet_management.dart';
 class CommingSoonNotification {
   dynamic model;
   int id;
+  int pmId;
   String petName;
   Uint8List? petMugShot;
   PetManagement petManagement;
@@ -14,6 +15,7 @@ class CommingSoonNotification {
   CommingSoonNotification({
     required this.model,
     required this.id,
+    required this.pmId,
     required this.petName,
     this.petMugShot,
     required this.petManagement,

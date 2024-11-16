@@ -5,6 +5,7 @@ import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/durgs_serivce.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/validators.dart';
 import 'package:pet_app/widgets/custom_button.dart';
@@ -13,7 +14,12 @@ import 'package:provider/provider.dart';
 
 class AddDrugPage extends StatefulWidget {
   final int petId;
-  const AddDrugPage({super.key, required this.petId});
+  final int pmId;
+  const AddDrugPage({
+    super.key,
+    required this.petId,
+    required this.pmId,
+  });
 
   @override
   State<AddDrugPage> createState() => _AddDrugPageState();
@@ -29,6 +35,14 @@ class _AddDrugPageState extends State<AddDrugPage> {
   DateTime _datetime = DateTime.now();
   DateTime _nextDatetime = DateTime.now();
 
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
+
   Future submit() async {
     final drugDate = {
       'Drug_PetID': widget.petId,
@@ -40,6 +54,9 @@ class _AddDrugPageState extends State<AddDrugPage> {
     debugPrint(drugDate.toString());
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
         await DrugsService.createDrug(drugDate).then((_) async {
           if (!mounted) return;
           await Provider.of<AppProvider>(context, listen: false).updateMember();
@@ -168,7 +185,8 @@ class _AddDrugPageState extends State<AddDrugPage> {
                             context: context,
                             builder: (BuildContext context) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                nextDateController.text = _nextDatetime.formatDate();
+                                nextDateController.text =
+                                    _nextDatetime.formatDate();
                               });
                               return Container(
                                 height: 300,

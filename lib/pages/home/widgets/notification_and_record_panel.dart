@@ -9,14 +9,14 @@ import 'package:pet_app/pages/home/notification_and_record_pages/excretion/excre
 import 'package:pet_app/pages/home/notification_and_record_pages/medical/medical_page.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/notification/notification_page.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/vaccine/vaccine_page.dart';
+import 'package:pet_app/providers/app_provider.dart';
+import 'package:provider/provider.dart';
 
 class NotificationAndRecordPanel extends StatelessWidget {
-  final int petIndex;
-  final bool editable;
+  final int pmId;
   const NotificationAndRecordPanel({
     super.key,
-    required this.petIndex,
-    required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -42,10 +42,7 @@ class NotificationAndRecordPanel extends StatelessWidget {
                       return Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => NotificationPage(
-                            petIndex: petIndex,
-                            editable: editable,
-                          ),
+                          builder: (context) => NotificationPage(pmId: pmId),
                         ),
                       );
                     },
@@ -58,10 +55,7 @@ class NotificationAndRecordPanel extends StatelessWidget {
                       return Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => DrugPage(
-                            petIndex: petIndex,
-                            editable: editable,
-                          ),
+                          builder: (context) => DrugPage(pmId: pmId),
                         ),
                       );
                     },
@@ -74,10 +68,7 @@ class NotificationAndRecordPanel extends StatelessWidget {
                       return Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => MedicalPage(
-                            petIndex: petIndex,
-                            editable: editable,
-                          ),
+                          builder: (context) => MedicalPage(pmId: pmId),
                         ),
                       );
                     },
@@ -90,10 +81,7 @@ class NotificationAndRecordPanel extends StatelessWidget {
                       return Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => VaccinePage(
-                            petIndex: petIndex,
-                            editable: editable,
-                          ),
+                          builder: (context) => VaccinePage(pmId: pmId),
                         ),
                       );
                     },
@@ -106,10 +94,7 @@ class NotificationAndRecordPanel extends StatelessWidget {
                       return Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => ExcretionPage(
-                            petIndex: petIndex,
-                            editable: editable,
-                          ),
+                          builder: (context) => ExcretionPage(pmId: pmId),
                         ),
                       );
                     },
@@ -122,10 +107,7 @@ class NotificationAndRecordPanel extends StatelessWidget {
                       return Navigator.push(
                         context,
                         CupertinoPageRoute(
-                          builder: (context) => DietPage(
-                            petIndex: petIndex,
-                            editable: editable,
-                          ),
+                          builder: (context) => DietPage(pmId: pmId),
                         ),
                       );
                     },
@@ -164,7 +146,12 @@ class FixedSizeButton extends StatelessWidget {
       width: 140,
       height: 80,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: onPressed == null
+            ? null
+            : () {
+                Provider.of<AppProvider>(context, listen: false).updateMember();
+                onPressed!.call();
+              },
         style: IconButton.styleFrom(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           backgroundColor: backgroundColor,

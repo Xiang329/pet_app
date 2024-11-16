@@ -1,6 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
+import 'package:pet_app/model/excretion.dart';
+import 'package:pet_app/model/pet.dart';
+import 'package:pet_app/model/pet_management.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/excretion/add_excretion_page.dart';
 import 'package:pet_app/pages/home/notification_and_record_pages/excretion/edit_excretion_page.dart';
 import 'package:pet_app/providers/app_provider.dart';
@@ -12,12 +16,10 @@ import 'package:pet_app/widgets/empty_data.dart';
 import 'package:provider/provider.dart';
 
 class ExcretionPage extends StatefulWidget {
-  final int petIndex;
-  final bool editable;
+  final int pmId;
   const ExcretionPage({
     super.key,
-    required this.petIndex,
-    required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -27,14 +29,18 @@ class ExcretionPage extends StatefulWidget {
 class _ExcretionPageState extends State<ExcretionPage> {
   @override
   Widget build(BuildContext context) {
-    final petId = Provider.of<AppProvider>(context)
-        .petManagement[widget.petIndex]
-        .pet!
-        .petId;
-    final excretionList = Provider.of<AppProvider>(context)
-        .petManagement[widget.petIndex]
-        .pet!
-        .excretionList;
+    PetManagement? petManagemnet;
+    Pet? pet;
+    List<Excretion> excretionList = [];
+    bool editable = false;
+    final appProvider = Provider.of<AppProvider>(context);
+    petManagemnet = appProvider.petManagement
+        .firstWhereOrNull((petManagement) => petManagement.pmId == widget.pmId);
+    if (petManagemnet != null) {
+      pet = petManagemnet.pet;
+      excretionList = petManagemnet.pet!.excretionList;
+      editable = petManagemnet.pmPermissions != '3';
+    }
 
     return Scaffold(
       backgroundColor: UiColor.theme1Color,
@@ -71,7 +77,8 @@ class _ExcretionPageState extends State<ExcretionPage> {
                   itemBuilder: (context, index) {
                     return SlidableItem(
                       excretion: excretionList[index],
-                      editable: widget.editable,
+                      editable: editable,
+                      pmId: widget.pmId,
                       onTap: () {
                         showModalBottomSheet(
                           clipBehavior: Clip.antiAlias,
@@ -88,9 +95,9 @@ class _ExcretionPageState extends State<ExcretionPage> {
                                 return CupertinoPageRoute(
                                   builder: (context) => EditExcretionPage(
                                     excretion: excretionList[index],
-                                    editable: widget.editable,
+                                    editable: editable,
+                                    pmId: widget.pmId,
                                   ),
-                                  settings: settings,
                                 );
                               },
                             );
@@ -107,7 +114,7 @@ class _ExcretionPageState extends State<ExcretionPage> {
           ),
         );
       }),
-      floatingActionButton: !widget.editable
+      floatingActionButton: !editable
           ? null
           : FloatingActionButton(
               backgroundColor: UiColor.theme2Color,
@@ -126,9 +133,9 @@ class _ExcretionPageState extends State<ExcretionPage> {
                       onGenerateRoute: (settings) {
                         return CupertinoPageRoute(
                           builder: (context) => AddExcretionPage(
-                            petId: petId,
+                            petId: pet!.petId,
+                            pmId: widget.pmId,
                           ),
-                          settings: settings,
                         );
                       },
                     );

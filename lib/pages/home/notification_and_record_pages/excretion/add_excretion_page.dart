@@ -6,6 +6,7 @@ import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/excretions_serivce.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/image_utils.dart';
 import 'package:pet_app/utils/validators.dart';
@@ -16,7 +17,12 @@ import 'package:provider/provider.dart';
 
 class AddExcretionPage extends StatefulWidget {
   final int petId;
-  const AddExcretionPage({super.key, required this.petId});
+  final int pmId;
+  const AddExcretionPage({
+    super.key,
+    required this.petId,
+    required this.pmId,
+  });
 
   @override
   State<AddExcretionPage> createState() => _AddExcretionPageState();
@@ -32,6 +38,14 @@ class _AddExcretionPageState extends State<AddExcretionPage> {
   DateTime _time = DateTime.now();
   Uint8List? picture;
 
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
+
   Future submit() async {
     DateTime dateTime =
         DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
@@ -44,6 +58,9 @@ class _AddExcretionPageState extends State<AddExcretionPage> {
     // debugPrint(excretionData.toString());
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
         await ExcretionsService.createExcretion(excretionData).then((_) async {
           if (!mounted) return;
           await Provider.of<AppProvider>(context, listen: false).updateMember();

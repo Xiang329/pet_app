@@ -5,6 +5,7 @@ import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/model/vaccine.dart';
 import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/services/vaccines_serivce.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/validators.dart';
@@ -16,10 +17,12 @@ import 'package:provider/provider.dart';
 class EditVaccinePage extends StatefulWidget {
   final Vaccine vaccine;
   final bool editable;
+  final int pmId;
   const EditVaccinePage({
     super.key,
     required this.vaccine,
     required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -35,8 +38,15 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
   TextEditingController nextDateController = TextEditingController();
   DateTime _datetime = DateTime.now();
   DateTime _nextDatetime = DateTime.now();
-
   String? selectedReaction;
+
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
 
   @override
   void initState() {
@@ -71,6 +81,9 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
     debugPrint(vaccineData.toString());
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
         await VaccinesService.updateVaccine(
                 widget.vaccine.vaccineId, vaccineData)
             .then((_) async {
@@ -250,10 +263,12 @@ class _EditVaccinePageState extends State<EditVaccinePage> {
                   ],
                 ),
                 const SizedBox(height: 30),
-                SizedBox(
-                  height: 42,
-                  child: CustomButton(asyncOnPressed: submit, buttonText: '完成'),
-                ),
+                if (widget.editable)
+                  SizedBox(
+                    height: 42,
+                    child:
+                        CustomButton(asyncOnPressed: submit, buttonText: '完成'),
+                  ),
               ],
             ),
           ),

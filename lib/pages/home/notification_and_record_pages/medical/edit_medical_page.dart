@@ -6,6 +6,7 @@ import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/model/medical.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/medicals_service.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/validators.dart';
 import 'package:pet_app/widgets/custom_button.dart';
@@ -15,10 +16,12 @@ import 'package:provider/provider.dart';
 class EditMedicalPage extends StatefulWidget {
   final Medical medical;
   final bool editable;
+  final int pmId;
   const EditMedicalPage({
     super.key,
     required this.medical,
     required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -34,6 +37,14 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
   TextEditingController doctorOrdersController = TextEditingController();
   DateTime _datetime = DateTime.now();
 
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
+
   Future submit() async {
     if (!widget.editable) return;
     final medicalData = {
@@ -47,6 +58,9 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
     debugPrint(medicalData.toString());
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
         await MedicalsService.updateMedical(
                 widget.medical.medicalId, medicalData)
             .then((_) async {
@@ -199,10 +213,12 @@ class _EditMedicalPageState extends State<EditMedicalPage> {
                   ],
                 ),
                 const SizedBox(height: 30),
-                SizedBox(
-                  height: 42,
-                  child: CustomButton(asyncOnPressed: submit, buttonText: '完成'),
-                ),
+                if (widget.editable)
+                  SizedBox(
+                    height: 42,
+                    child:
+                        CustomButton(asyncOnPressed: submit, buttonText: '完成'),
+                  ),
               ],
             ),
           ),

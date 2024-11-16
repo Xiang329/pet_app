@@ -62,12 +62,12 @@ class _PetItemState extends State<PetItem> {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () {
+              Provider.of<AppProvider>(context, listen: false).updateMember();
               Navigator.push(
                 context,
                 CupertinoPageRoute(
                   builder: (context) => PetDetailPage(
-                    petIndex: widget.petIndex,
-                    editable: widget.petManagement.pmPermissions != '3',
+                    pmId: widget.petManagement.pmId,
                   ),
                 ),
               );

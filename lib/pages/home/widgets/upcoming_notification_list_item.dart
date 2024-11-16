@@ -10,6 +10,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/advices_serivce.dart';
 import 'package:pet_app/services/durgs_serivce.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/services/vaccines_serivce.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/widgets/common_dialog.dart';
@@ -30,12 +31,24 @@ class UpcomingNotificationListItem extends StatefulWidget {
 
 class _UpcomingNotificationListItemState
     extends State<UpcomingNotificationListItem> {
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.notification.pmId)
+        .then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
+
   void removeData() async {
     CommonDialog.showConfirmDialog(
       context: context,
       titleText: '是否確定刪除？',
       onConfirmPressed: () async {
         try {
+          if (await checkPermission() == false) {
+            throw '沒有足夠的權限。';
+          }
           if (widget.notification.model is Advice) {
             await AdvicesService.deleteAdvice(widget.notification.id);
           } else if (widget.notification.model is Drug) {

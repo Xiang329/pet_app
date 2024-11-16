@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/model/pet.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/pet_classes_service.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/services/pet_varieties_service.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/image_utils.dart';
@@ -19,7 +20,8 @@ import 'package:provider/provider.dart';
 
 class EditPetPage extends StatefulWidget {
   final Pet pet;
-  const EditPetPage({super.key, required this.pet});
+  final int pmId;
+  const EditPetPage({super.key, required this.pet, required this.pmId});
 
   @override
   State<EditPetPage> createState() => _EditPetPageState();
@@ -89,6 +91,14 @@ class _EditPetPageState extends State<EditPetPage> {
     selectedLigation = widget.pet.petLigation ? '是' : '否';
   }
 
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
+
   Future submit() async {
     final petData = {
       "Pet_ID": widget.pet.petId,
@@ -107,6 +117,10 @@ class _EditPetPageState extends State<EditPetPage> {
     // debugPrint(Map.from(petData).remove('Pet_MugShot'));
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
+        if (!mounted) return;
         await Provider.of<AppProvider>(context, listen: false)
             .editPet(widget.pet.petId, petData);
         if (!mounted) return;

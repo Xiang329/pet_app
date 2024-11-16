@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pet_app/common/app_assets.dart';
 import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/services/vaccines_serivce.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/validators.dart';
@@ -14,7 +15,12 @@ import 'package:provider/provider.dart';
 
 class AddVaccinePage extends StatefulWidget {
   final int petId;
-  const AddVaccinePage({super.key, required this.petId});
+  final int pmId;
+  const AddVaccinePage({
+    super.key,
+    required this.petId,
+    required this.pmId,
+  });
 
   @override
   State<AddVaccinePage> createState() => _AddVaccinePageState();
@@ -30,8 +36,15 @@ class _AddVaccinePageState extends State<AddVaccinePage> {
   TextEditingController reactionController = TextEditingController();
   DateTime _datetime = DateTime.now();
   DateTime _nextDatetime = DateTime.now();
-
   String? selectedReaction;
+
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
 
   Future submit() async {
     final vaccineData = {
@@ -49,6 +62,9 @@ class _AddVaccinePageState extends State<AddVaccinePage> {
     debugPrint(vaccineData.toString());
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
         await VaccinesService.createVaccine(vaccineData).then((_) async {
           if (!mounted) return;
           await Provider.of<AppProvider>(context, listen: false).updateMember();
@@ -169,7 +185,8 @@ class _AddVaccinePageState extends State<AddVaccinePage> {
                             context: context,
                             builder: (BuildContext context) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                nextDateController.text = _nextDatetime.formatDate();
+                                nextDateController.text =
+                                    _nextDatetime.formatDate();
                               });
                               return Container(
                                 height: 300,

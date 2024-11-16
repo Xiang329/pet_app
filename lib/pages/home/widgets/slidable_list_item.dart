@@ -15,6 +15,7 @@ import 'package:pet_app/services/diets_serivce.dart';
 import 'package:pet_app/services/durgs_serivce.dart';
 import 'package:pet_app/services/excretions_serivce.dart';
 import 'package:pet_app/services/medicals_service.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/services/vaccines_serivce.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/widgets/common_dialog.dart';
@@ -29,6 +30,7 @@ class SlidableItem extends StatefulWidget {
   final Vaccine? vaccine;
   final Function()? onTap;
   final bool editable;
+  final int pmId;
   const SlidableItem({
     super.key,
     this.onTap,
@@ -39,6 +41,7 @@ class SlidableItem extends StatefulWidget {
     this.medical,
     this.vaccine,
     required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -46,14 +49,23 @@ class SlidableItem extends StatefulWidget {
 }
 
 class _SlidableItemState extends State<SlidableItem> {
-  // 必須確保更新狀態，否則出錯 A dismissed Slidable widget is still part of the tree.
-  // 只需在回調中移除相應的 Pet 對象
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
+
   void removeData() async {
     CommonDialog.showConfirmDialog(
       context: context,
       titleText: '是否確定刪除？',
       onConfirmPressed: () async {
         try {
+          if (await checkPermission() == false) {
+            throw '沒有足夠的權限。';
+          }
           if (widget.advice != null) {
             await AdvicesService.deleteAdvice(widget.advice!.adviceId);
           } else if (widget.diet != null) {

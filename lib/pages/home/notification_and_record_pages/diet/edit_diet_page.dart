@@ -6,6 +6,7 @@ import 'package:pet_app/common/app_colors.dart';
 import 'package:pet_app/model/diet.dart';
 import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/services/diets_serivce.dart';
+import 'package:pet_app/services/pet_managements_service.dart';
 import 'package:pet_app/utils/date_format_extension.dart';
 import 'package:pet_app/utils/validators.dart';
 import 'package:pet_app/widgets/custom_button.dart';
@@ -15,10 +16,12 @@ import 'package:provider/provider.dart';
 class EditDietPage extends StatefulWidget {
   final Diet diet;
   final bool editable;
+  final int pmId;
   const EditDietPage({
     super.key,
     required this.diet,
     required this.editable,
+    required this.pmId,
   });
 
   @override
@@ -34,6 +37,14 @@ class _EditDietPageState extends State<EditDietPage> {
   TextEditingController timeController = TextEditingController();
   DateTime _date = DateTime.now();
   DateTime _time = DateTime.now();
+
+  Future<bool> checkPermission() async {
+    bool editable = false;
+    await PetManagementsService.getPetManagement(widget.pmId).then((pm) {
+      editable = pm.pmPermissions != '3';
+    });
+    return editable;
+  }
 
   @override
   void initState() {
@@ -60,6 +71,9 @@ class _EditDietPageState extends State<EditDietPage> {
     debugPrint(dietData.toString());
     try {
       if (_formKey.currentState!.validate()) {
+        if (await checkPermission() == false) {
+          throw '沒有足夠的權限。';
+        }
         await DietsService.updateDiet(widget.diet.dietId, dietData)
             .then((_) async {
           if (!mounted) return;
@@ -221,10 +235,12 @@ class _EditDietPageState extends State<EditDietPage> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                SizedBox(
-                  height: 42,
-                  child: CustomButton(asyncOnPressed: submit, buttonText: '完成'),
-                ),
+                if (widget.editable)
+                  SizedBox(
+                    height: 42,
+                    child:
+                        CustomButton(asyncOnPressed: submit, buttonText: '完成'),
+                  ),
               ],
             ),
           ),
