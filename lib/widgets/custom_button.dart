@@ -40,7 +40,7 @@ class _CustomButtonState extends State<CustomButton> {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: _isLoading ||
-              (widget.asyncOnPressed == null && widget.asyncOnPressed == null)
+              (widget.asyncOnPressed == null && widget.syncOnPressed == null)
           ? null
           : _onPressed,
       style: TextButton.styleFrom(
