@@ -141,14 +141,10 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                               ),
                             )
                           : ListView.separated(
-                              physics:
-                                  const NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: widget
-                                  .place
-                                  .regularOpeningHours!
-                                  .weekdayDescriptions
-                                  .length,
+                              itemCount: widget.place.regularOpeningHours!
+                                  .weekdayDescriptions.length,
                               itemBuilder: (context, index) {
                                 return Text(
                                   widget.place.regularOpeningHours!
@@ -182,6 +178,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                     myLocationEnabled: true,
                     myLocationButtonEnabled: false,
                     onCameraMove: null,
+                    webGestureHandling: WebGestureHandling.none,
                     onMapCreated: _onMapCreated,
                     initialCameraPosition: CameraPosition(
                       target: _center,
