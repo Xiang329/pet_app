@@ -4,14 +4,38 @@ import 'package:pet_app/common/app_colors.dart';
 class CommonDialog {
   CommonDialog._();
 
+  static Future<void> showRefreshDialog({
+    required BuildContext context,
+    required Future<void> Function() futureFunction,
+  }) async {
+    BuildContext? dialogContext;
+    showCupertinoDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        dialogContext = context;
+        return const CupertinoAlertDialog(
+          title: Text('更新中'),
+          content: CupertinoActivityIndicator(),
+        );
+      },
+    );
+
+    await futureFunction();
+
+    if (dialogContext != null) {
+      if (!dialogContext!.mounted) return;
+      Navigator.of(dialogContext!).pop();
+    }
+  }
+
   static Future<void> showConfirmDialog({
     required BuildContext context,
     required String titleText,
     String? contentText,
     required Future<void> Function() onConfirmPressed,
   }) {
-    final BuildContext loadDialogContext = context;
-    final BuildContext errorDialogContext = context;
+    BuildContext? loadDialogContext;
     return showCupertinoDialog(
       context: context,
       builder: (context) {
@@ -29,9 +53,10 @@ class CommonDialog {
               onPressed: () async {
                 Navigator.of(context).pop();
                 showCupertinoDialog(
-                  context: loadDialogContext,
+                  context: context,
                   barrierDismissible: true,
                   builder: (context) {
+                    loadDialogContext = context;
                     return const CupertinoAlertDialog(
                       title: Text('刪除中...'),
                       content: CupertinoActivityIndicator(),
@@ -40,14 +65,18 @@ class CommonDialog {
                 );
                 try {
                   await onConfirmPressed();
-                  if (!loadDialogContext.mounted) return;
-                  Navigator.of(loadDialogContext).pop();
+                  if (loadDialogContext != null) {
+                    if (!loadDialogContext!.mounted) return;
+                    Navigator.of(loadDialogContext!).pop();
+                  }
                 } catch (e) {
-                  if (!loadDialogContext.mounted) return;
-                  Navigator.of(loadDialogContext).pop();
-                  if (!errorDialogContext.mounted) return;
+                  if (loadDialogContext != null) {
+                    if (!loadDialogContext!.mounted) return;
+                    Navigator.of(loadDialogContext!).pop();
+                  }
+                  if (!context.mounted) return;
                   showCupertinoDialog(
-                    context: errorDialogContext,
+                    context: context,
                     builder: (context) {
                       return CupertinoAlertDialog(
                         title: const Text('錯誤'),
@@ -64,10 +93,6 @@ class CommonDialog {
                     },
                   );
                 }
-                // await onConfirmPressed().whenComplete(() {
-                //   if (!dialogContext.mounted) return;
-                //   Navigator.of(dialogContext).pop();
-                // });
               },
               child: const Text(
                 '刪除',

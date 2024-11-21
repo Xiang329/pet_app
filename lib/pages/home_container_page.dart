@@ -27,12 +27,11 @@ class HomeContainerPage extends StatefulWidget {
 }
 
 class _HomeContainerPageState extends State<HomeContainerPage> {
-  final List<Widget> pages = [
-    const HomePage(),
-    const SearchPlacePage(),
-    const SocialPage(),
-    const ProfilePage(),
-  ];
+  final List<Widget> pages = [];
+  final GlobalKey<HomePageState> homePageState = GlobalKey();
+  final GlobalKey<SearchPlacePageState> searchPlacePageState = GlobalKey();
+  final GlobalKey<SocialPageState> socialPageState = GlobalKey();
+  final GlobalKey<ProfilePageState> profilePageState = GlobalKey();
 
   int currentIndex = 0;
 
@@ -40,6 +39,12 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
   void initState() {
     _initializeServices();
     super.initState();
+    pages.addAll([
+      HomePage(key: homePageState),
+      SearchPlacePage(key: searchPlacePageState),
+      SocialPage(key: socialPageState),
+      ProfilePage(key: profilePageState),
+    ]);
   }
 
   Future<void> _initializeServices() async {
@@ -52,6 +57,26 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
     } catch (e) {
       debugPrint('初始化服務錯誤: $e');
     }
+  }
+
+  void _chagnePage(int index) {
+    switch (index) {
+      case 0:
+        homePageState.currentState?.loadDataWithDialog();
+        break;
+      case 1:
+        searchPlacePageState.currentState?.loadDataWithDailog();
+        break;
+      case 2:
+        socialPageState.currentState?.loadDataWithDialog();
+        break;
+      case 3:
+        profilePageState.currentState?.loadDataWithDailog();
+        break;
+    }
+    setState(() {
+      currentIndex = index;
+    });
   }
 
   @override
@@ -272,11 +297,7 @@ class _HomeContainerPageState extends State<HomeContainerPage> {
         ),
         child: BottomNavigationBar(
           currentIndex: currentIndex,
-          onTap: (index) {
-            setState(() {
-              currentIndex = index;
-            });
-          },
+          onTap: _chagnePage,
           type: BottomNavigationBarType.fixed, // 顏色覆蓋
           backgroundColor: UiColor.theme2Color,
           selectedItemColor: UiColor.text1Color,

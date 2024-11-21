@@ -7,16 +7,25 @@ import 'package:pet_app/routes/app_routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<ProfilePage> createState() => ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class ProfilePageState extends State<ProfilePage> {
+  Future<void> loadDataWithDailog() async {
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
+    await CommonDialog.showRefreshDialog(
+      context: context,
+      futureFunction: appProvider.updateMember,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appProvider = Provider.of<AppProvider>(context);

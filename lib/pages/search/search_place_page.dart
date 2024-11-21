@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:pet_app/common/app_colors.dart';
@@ -8,6 +9,7 @@ import 'package:pet_app/pages/search/search_filter_page.dart';
 import 'package:pet_app/pages/search/widgets/hospital_list_item.dart';
 import 'package:pet_app/pages/search/widgets/shop_list_item.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:pet_app/widgets/filter_field.dart';
 import 'package:pet_app/widgets/no_results.dart';
 
@@ -15,17 +17,16 @@ class SearchPlacePage extends StatefulWidget {
   const SearchPlacePage({super.key});
 
   @override
-  State<SearchPlacePage> createState() => _SearchPlacePageState();
+  State<SearchPlacePage> createState() => SearchPlacePageState();
 }
 
-class _SearchPlacePageState extends State<SearchPlacePage>
+class SearchPlacePageState extends State<SearchPlacePage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<FilterFieldState> filterFieldKey = GlobalKey();
   TextEditingController searchController = TextEditingController();
   late TabController tabController;
   // 臺北市經緯度
   final defaultPosition = ('25.0329694', '121.5654177');
-  bool loaded = false;
   Position? currentLocation;
   Future? fetchHospitals;
   Future? fetchStores;
@@ -41,23 +42,35 @@ class _SearchPlacePageState extends State<SearchPlacePage>
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(clearFilters);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        await _determinePosition();
-      } catch (e) {
-        debugPrint(e.toString());
-      } finally {
-        try {
-          await Future.wait([
-            fetchHospitals = _fetchHospitals(),
-            fetchStores = _fetchStores(),
-          ]).whenComplete(() {
-            setState(() {});
-          });
-        } catch (e) {
-          debugPrint('Place錯誤${e.toString()}');
-        }
-      }
+      await _loadSearchData();
     });
+  }
+
+  Future<void> _loadSearchData() async {
+    try {
+      await _determinePosition();
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      try {
+        await Future.wait([
+          fetchHospitals = _fetchHospitals(),
+          fetchStores = _fetchStores(),
+        ]).whenComplete(() {
+          setState(() {});
+        });
+      } catch (e) {
+        debugPrint('Place錯誤${e.toString()}');
+      }
+    }
+  }
+
+  Future<void> loadDataWithDailog() async {
+    if (!hasLoaded) return;
+    await CommonDialog.showRefreshDialog(
+      context: context,
+      futureFunction: _loadSearchData,
+    );
   }
 
   Future _determinePosition() async {
@@ -95,12 +108,13 @@ class _SearchPlacePageState extends State<SearchPlacePage>
   }
 
   Future<PlacesResponse> _fetchPlaces(String query) async {
-    debugPrint('搜尋位置:$query');
     if (currentLocation == null) {
-      debugPrint('使用預設經緯度(台北市)');
+      debugPrint('搜尋位置:$query，預設位置');
     } else {
-      debugPrint('使用裝置定位位置');
+      debugPrint('搜尋位置:$query，裝置定位位置');
     }
+    debugPrint(
+        "(latitude:${currentLocation?.latitude ?? defaultPosition.$1},longitude:${currentLocation?.longitude ?? defaultPosition.$2})");
     // 遮罩
     final List<String> fieldMaskFields = [
       // '*',
@@ -135,9 +149,6 @@ class _SearchPlacePageState extends State<SearchPlacePage>
         }
       }),
     );
-
-    print("latitude ${currentLocation?.latitude ?? defaultPosition.$1}");
-    print("longitude ${currentLocation?.longitude ?? defaultPosition.$2}");
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
@@ -269,7 +280,7 @@ class _SearchPlacePageState extends State<SearchPlacePage>
                 if (snapshot.connectionState == ConnectionState.done) {
                   hasLoaded = true;
                   if (filteredHospitalPlaces.isEmpty) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: NoResults());
                   }
                 }
                 return ListView.separated(

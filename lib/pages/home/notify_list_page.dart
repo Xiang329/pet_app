@@ -19,7 +19,6 @@ class _NotifyListPageState extends State<NotifyListPage> {
   DateTime now = DateTime.now();
   late DateTime todayStart;
   late DateTime todayEnd;
-  late DateTime sevenDaysLater;
   final List<CommingSoonNotification> today = [];
   final List<CommingSoonNotification> withinSevenDays = [];
 
@@ -28,7 +27,6 @@ class _NotifyListPageState extends State<NotifyListPage> {
     super.initState();
     todayStart = DateTime(now.year, now.month, now.day);
     todayEnd = todayStart.add(const Duration(days: 1));
-    sevenDaysLater = todayStart.add(const Duration(days: 7));
   }
 
   @override

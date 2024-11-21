@@ -7,6 +7,7 @@ import 'package:pet_app/providers/app_provider.dart';
 import 'package:pet_app/pages/home/widgets/pet_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:pet_app/widgets/empty_data.dart';
 import 'package:provider/provider.dart';
 
@@ -14,22 +15,28 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   Future? loadData;
+  bool hasLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    loadData = Provider.of<AppProvider>(context, listen: false)
+    loadData = _loadPetData();
+  }
+
+  Future<void> _loadPetData() async {
+    await Provider.of<AppProvider>(context, listen: false)
         .updateMember()
         .catchError(
       (e) {
         if (!mounted) return;
         showCupertinoDialog(
           context: context,
+          barrierDismissible: true,
           builder: (context) {
             return CupertinoAlertDialog(
               title: const Text('錯誤'),
@@ -46,6 +53,14 @@ class _HomePageState extends State<HomePage> {
           },
         );
       },
+    );
+  }
+
+  Future<void> loadDataWithDialog() async {
+    if (!hasLoaded) return;
+    await CommonDialog.showRefreshDialog(
+      context: context,
+      futureFunction: _loadPetData,
     );
   }
 
@@ -99,6 +114,7 @@ class _HomePageState extends State<HomePage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
                 }
+                hasLoaded = true;
                 if (petManagement.isEmpty) {
                   return const Center(child: EmptyData(text: '快來建立第一隻寵物吧'));
                 }

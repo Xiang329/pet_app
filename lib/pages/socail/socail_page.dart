@@ -7,6 +7,7 @@ import 'package:pet_app/pages/socail/add_post_page.dart';
 import 'package:pet_app/pages/socail/my_post_page.dart';
 import 'package:pet_app/pages/socail/widgets/post_item.dart';
 import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/widgets/common_dialog.dart';
 import 'package:pet_app/widgets/empty_data.dart';
 import 'package:provider/provider.dart';
 
@@ -14,17 +15,27 @@ class SocialPage extends StatefulWidget {
   const SocialPage({super.key});
 
   @override
-  State<SocialPage> createState() => _SocialPageState();
+  State<SocialPage> createState() => SocialPageState();
 }
 
-class _SocialPageState extends State<SocialPage> {
-  late Future fetchAllSocialMedias;
+class SocialPageState extends State<SocialPage> {
+  Future? fetchAllSocialMedias;
+  bool hasLoaded = false;
 
   @override
   void initState() {
     super.initState();
     fetchAllSocialMedias =
         Provider.of<AppProvider>(context, listen: false).fetchAllSocialMedias();
+  }
+
+  Future loadDataWithDialog() async {
+    if (!hasLoaded) return;
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
+    await CommonDialog.showRefreshDialog(
+      context: context,
+      futureFunction: appProvider.fetchAllSocialMedias,
+    );
   }
 
   @override
@@ -62,11 +73,9 @@ class _SocialPageState extends State<SocialPage> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
+              hasLoaded = true;
               if (allSocialMedias.isEmpty) {
-                return const Center(
-                    child: EmptyData(
-                  text: '尚無貼文',
-                ));
+                return const Center(child: EmptyData(text: '尚無貼文'));
               }
               return Column(
                 children: [
