@@ -25,7 +25,7 @@ class CommonDialog {
 
     if (dialogContext != null) {
       if (!dialogContext!.mounted) return;
-      Navigator.of(dialogContext!).pop();
+      Navigator.of(dialogContext!).maybePop();
     }
   }
 
@@ -67,12 +67,12 @@ class CommonDialog {
                   await onConfirmPressed();
                   if (loadDialogContext != null) {
                     if (!loadDialogContext!.mounted) return;
-                    Navigator.of(loadDialogContext!).pop();
+                    Navigator.of(loadDialogContext!).maybePop();
                   }
                 } catch (e) {
                   if (loadDialogContext != null) {
                     if (!loadDialogContext!.mounted) return;
-                    Navigator.of(loadDialogContext!).pop();
+                    Navigator.of(loadDialogContext!).maybePop();
                   }
                   if (!context.mounted) return;
                   showCupertinoDialog(
