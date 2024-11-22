@@ -128,10 +128,10 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                       children: [
                         CircleAvatar(
                           radius: 32.5,
-                          backgroundImage: member == null
-                              ? null
+                          backgroundImage: (member == null)
+                              ? const AssetImage(AssetsImages.userAvatorPng)
                               : member.memberMugShot.isEmpty
-                                  ? null
+                                  ? const AssetImage(AssetsImages.userAvatorPng)
                                   : MemoryImage(member.memberMugShot),
                         ),
                         const SizedBox(width: 7),
