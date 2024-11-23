@@ -70,137 +70,136 @@ class HomePageState extends State<HomePage> {
     final allNotifications = Provider.of<AppProvider>(context).allNotifications;
     return Scaffold(
       backgroundColor: UiColor.theme1Color,
-      body: SingleChildScrollView(
+      body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 20),
-        // 因受下方Item觸發而影響暫時停用
-        // physics: const BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "我的寵物",
-                    style: TextStyle(
-                        color: UiColor.text1Color,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  Visibility(
-                    visible: petManagement.length > 3 ? true : false,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.keyboard_arrow_right,
-                        color: UiColor.text1Color,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => const PetListPage(),
-                          ),
-                        );
-                      },
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "我的寵物",
+                  style: TextStyle(
+                      color: UiColor.text1Color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
+                Visibility(
+                  visible: petManagement.length > 3 ? true : false,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.keyboard_arrow_right,
+                      color: UiColor.text1Color,
                     ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => const PetListPage(),
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            FutureBuilder(
+          ),
+          FutureBuilder(
+            future: loadData,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              hasLoaded = true;
+              if (petManagement.isEmpty) {
+                return const Center(child: EmptyData(text: '快來建立第一隻寵物吧'));
+              }
+              return SlidableAutoCloseBehavior(
+                // 使用 Slidable 時，如果使用 ListView.builder，則不可以設定itemExtent調整子元件高度，
+                // 否則出錯A dismissed Slidable widget is still part of the tree.
+                child: ListView.separated(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount:
+                      petManagement.length <= 3 ? petManagement.length : 3,
+                  itemBuilder: (context, index) {
+                    return PetItem(
+                      petManagement: petManagement[index],
+                      petIndex: index,
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 0),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "即將到來",
+                  style: TextStyle(
+                      color: UiColor.text1Color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
+                Visibility(
+                  visible: allNotifications.length > 3 ? true : false,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.keyboard_arrow_right,
+                      color: UiColor.text1Color,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => const NotifyListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          FutureBuilder(
               future: loadData,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
+                  return const Center(child: CircularProgressIndicator());
                 }
-                hasLoaded = true;
-                if (petManagement.isEmpty) {
-                  return const Center(child: EmptyData(text: '快來建立第一隻寵物吧'));
+                if (allNotifications.isEmpty) {
+                  return const Center(child: EmptyData(text: '尚無通知'));
                 }
                 return SlidableAutoCloseBehavior(
                   // 使用 Slidable 時，如果使用 ListView.builder，則不可以設定itemExtent調整子元件高度，
                   // 否則出錯A dismissed Slidable widget is still part of the tree.
                   child: ListView.separated(
-                    physics: const NeverScrollableScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     shrinkWrap: true,
-                    itemCount:
-                        petManagement.length <= 3 ? petManagement.length : 3,
+                    itemCount: allNotifications.length <= 3
+                        ? allNotifications.length
+                        : 3,
                     itemBuilder: (context, index) {
-                      return PetItem(
-                        petManagement: petManagement[index],
-                        petIndex: index,
+                      return UpcomingNotificationListItem(
+                        notification: allNotifications[index],
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) =>
                         const SizedBox(height: 0),
                   ),
                 );
-              },
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "即將到來",
-                    style: TextStyle(
-                        color: UiColor.text1Color,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  Visibility(
-                    visible: allNotifications.length > 3 ? true : false,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.keyboard_arrow_right,
-                        color: UiColor.text1Color,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => const NotifyListPage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            FutureBuilder(
-                future: loadData,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (allNotifications.isEmpty) {
-                    return const Center(child: EmptyData(text: '尚無通知'));
-                  }
-                  return SlidableAutoCloseBehavior(
-                    // 使用 Slidable 時，如果使用 ListView.builder，則不可以設定itemExtent調整子元件高度，
-                    // 否則出錯A dismissed Slidable widget is still part of the tree.
-                    child: ListView.separated(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: allNotifications.length <= 3
-                          ? allNotifications.length
-                          : 3,
-                      itemBuilder: (context, index) {
-                        return UpcomingNotificationListItem(
-                          notification: allNotifications[index],
-                        );
-                      },
-                      separatorBuilder: (BuildContext context, int index) =>
-                          const SizedBox(height: 0),
-                    ),
-                  );
-                }),
-          ],
-        ),
+              }),
+        ],
       ),
     );
   }
