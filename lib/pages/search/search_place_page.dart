@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:pet_app/common/app_colors.dart';
@@ -25,22 +24,51 @@ class SearchPlacePageState extends State<SearchPlacePage>
   final GlobalKey<FilterFieldState> filterFieldKey = GlobalKey();
   TextEditingController searchController = TextEditingController();
   late TabController tabController;
+
   // 臺北市經緯度
   final defaultPosition = ('25.0329694', '121.5654177');
   Position? currentLocation;
-  Future? fetchHospitals;
-  Future? fetchStores;
-  List<Place> hospitalPlaces = [];
-  List<Place> storePlaces = [];
-  final List<Place> filteredHospitalPlaces = [];
-  final List<Place> filteredStorePlaces = [];
   bool hasLoaded = false;
+
+  // 醫院相關
+  Future? fetchHospitals;
+  final List<Place> hospitalPlaces = [];
+  final List<Place> filteredHospitalPlaces = [];
+  String? hospitalsNextPageToken;
+  bool isLoadingHospital = false;
+  bool hasMoreHospitalsData = true;
+  final ScrollController hospitalListScrollController = ScrollController();
+
+  // 商店相關
+  Future? fetchStores;
+  final List<Place> storePlaces = [];
+  final List<Place> filteredStorePlaces = [];
+  String? storesNextPageToken;
+  bool isLoadingStore = false;
+  bool hasMoreStoresData = true;
+  final ScrollController storeListScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(clearFilters);
+    hospitalListScrollController.addListener(() {
+      // 滑動到底部後加載更多
+      if (hasMoreHospitalsData &&
+          hospitalListScrollController.position.pixels ==
+              hospitalListScrollController.position.maxScrollExtent) {
+        _fetchHospitals(refresh: false);
+      }
+    });
+    storeListScrollController.addListener(() {
+      // 滑動到底部後加載更多
+      if (hasMoreStoresData &&
+          storeListScrollController.position.pixels ==
+              storeListScrollController.position.maxScrollExtent) {
+        _fetchStores(refresh: false);
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadSearchData();
     });
@@ -107,7 +135,8 @@ class SearchPlacePageState extends State<SearchPlacePage>
     currentLocation = position;
   }
 
-  Future<PlacesResponse> _fetchPlaces(String query) async {
+  Future<PlacesResponse> _fetchPlaces(String query,
+      {String? nextPageToken}) async {
     if (currentLocation == null) {
       debugPrint('搜尋位置:$query，預設位置');
     } else {
@@ -126,7 +155,28 @@ class SearchPlacePageState extends State<SearchPlacePage>
       'places.regularOpeningHours.weekdayDescriptions',
       'places.rating',
       'places.userRatingCount',
+      'nextPageToken',
     ];
+
+    final requestBody = {
+      "textQuery": query,
+      "pageSize": 20,
+      "languageCode": "zh-TW",
+      "locationBias": {
+        "circle": {
+          "center": {
+            "latitude": currentLocation?.latitude ?? defaultPosition.$1,
+            "longitude": currentLocation?.longitude ?? defaultPosition.$2,
+          },
+          "radius": 10000.0,
+        }
+      },
+    };
+
+    if (nextPageToken != null) {
+      requestBody["pageToken"] = nextPageToken;
+    }
+
     final response = await http.post(
       Uri.parse('https://places.googleapis.com/v1/places:searchText'),
       headers: {
@@ -134,20 +184,7 @@ class SearchPlacePageState extends State<SearchPlacePage>
         'X-Goog-Api-Key': 'AIzaSyCuYwvp1_QoOP2Vd0VVGKMCjMYDyi0zL2w',
         'X-Goog-FieldMask': fieldMaskFields.join(','),
       },
-      body: json.encode({
-        "textQuery": query,
-        "pageSize": 20,
-        "languageCode": "zh-TW",
-        "locationBias": {
-          "circle": {
-            "center": {
-              "latitude": currentLocation?.latitude ?? defaultPosition.$1,
-              "longitude": currentLocation?.longitude ?? defaultPosition.$2
-            },
-            "radius": 10000.0
-          }
-        }
-      }),
+      body: json.encode(requestBody),
     );
 
     if (response.statusCode == 200) {
@@ -159,22 +196,52 @@ class SearchPlacePageState extends State<SearchPlacePage>
     }
   }
 
-  Future<void> _fetchHospitals() async {
-    await _fetchPlaces("動物醫院").then((value) {
-      hospitalPlaces.clear();
-      filteredHospitalPlaces.clear();
+  Future<void> _fetchHospitals({bool refresh = true}) async {
+    if (isLoadingHospital) return;
+    isLoadingHospital = true;
+    if (refresh == true) hospitalsNextPageToken = null;
+    await _fetchPlaces("動物醫院", nextPageToken: hospitalsNextPageToken)
+        .then((value) {
+      if (hasMoreHospitalsData == false || refresh == true) {
+        hospitalPlaces.clear();
+        filteredHospitalPlaces.clear();
+      }
+      if (value.nextPageToken == null) {
+        hospitalsNextPageToken = null;
+        hasMoreHospitalsData = false;
+      } else {
+        hospitalsNextPageToken = value.nextPageToken;
+        hasMoreHospitalsData = true;
+      }
       hospitalPlaces.addAll(value.places);
       filteredHospitalPlaces.addAll(value.places);
     });
+    isLoadingHospital = false;
+    setState(() {});
   }
 
-  Future<void> _fetchStores() async {
-    await _fetchPlaces("動物商店").then((value) {
-      storePlaces.clear();
-      filteredStorePlaces.clear();
+  Future<void> _fetchStores({bool refresh = true}) async {
+    if (isLoadingStore) return;
+    isLoadingStore = true;
+    if (refresh == true) storesNextPageToken = null;
+    await _fetchPlaces("動物商店", nextPageToken: storesNextPageToken)
+        .then((value) {
+      if (hasMoreStoresData == false || refresh == true) {
+        storePlaces.clear();
+        filteredStorePlaces.clear();
+      }
+      if (value.nextPageToken == null) {
+        storesNextPageToken = null;
+        hasMoreStoresData = false;
+      } else {
+        storesNextPageToken = value.nextPageToken;
+        hasMoreStoresData = true;
+      }
       storePlaces.addAll(value.places);
       filteredStorePlaces.addAll(value.places);
     });
+    isLoadingStore = false;
+    setState(() {});
   }
 
   List<Place> filterHospital(
@@ -260,9 +327,9 @@ class SearchPlacePageState extends State<SearchPlacePage>
           unselectedLabelColor: UiColor.text2Color,
           labelStyle:
               const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-          tabs: const [
-            Tab(text: '找醫院'),
-            Tab(text: '找商店'),
+          tabs: [
+            Tab(text: '找醫院 (${filteredHospitalPlaces.length})'),
+            Tab(text: '找商店 (${filteredStorePlaces.length})'),
           ],
         ),
       ),
@@ -284,14 +351,19 @@ class SearchPlacePageState extends State<SearchPlacePage>
                   }
                 }
                 return ListView.separated(
+                  controller: hospitalListScrollController,
                   physics: const BouncingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics()),
-                  itemCount: filteredHospitalPlaces.length,
+                  itemCount: filteredHospitalPlaces.length + 1,
                   itemBuilder: (context, index) {
-                    return HospitalItem(
-                      hospital: filteredHospitalPlaces[index],
-                      tabIndex: tabController.index,
-                    );
+                    if (index < filteredHospitalPlaces.length) {
+                      return HospitalItem(
+                        hospital: filteredHospitalPlaces[index],
+                        tabIndex: tabController.index,
+                      );
+                    } else {
+                      return getMoreWidget(hasMoreHospitalsData);
+                    }
                   },
                   separatorBuilder: (BuildContext context, int index) =>
                       const SizedBox(height: 0),
@@ -311,20 +383,47 @@ class SearchPlacePageState extends State<SearchPlacePage>
                   }
                 }
                 return ListView.separated(
+                  controller: storeListScrollController,
                   physics: const BouncingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics()),
-                  itemCount: filteredStorePlaces.length,
+                  itemCount: filteredStorePlaces.length + 1,
                   itemBuilder: (context, index) {
-                    return ShopItem(
-                      shop: filteredStorePlaces[index],
-                      tabIndex: tabController.index,
-                    );
+                    if (index < filteredStorePlaces.length) {
+                      return ShopItem(
+                        shop: filteredStorePlaces[index],
+                        tabIndex: tabController.index,
+                      );
+                    } else {
+                      return getMoreWidget(hasMoreStoresData);
+                    }
                   },
                   separatorBuilder: (BuildContext context, int index) =>
                       const SizedBox(height: 0),
                 );
               },
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget getMoreWidget(bool hasMoreData) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              hasMoreData ? '讀取中...　' : '沒有更多資料了',
+              style: const TextStyle(fontSize: 16.0),
+            ),
+            if (hasMoreData)
+              const CircularProgressIndicator(
+                strokeWidth: 2.0,
+              )
           ],
         ),
       ),
