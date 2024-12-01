@@ -1,8 +1,8 @@
 class ApiUrls {
   ApiUrls._();
 
-  // static const String baseUrl = "https://apitest00195.azure-api.net/api"; // azure status: disabled
-  static const String baseUrl = "https://h2gg75q310.execute-api.ap-northeast-1.amazonaws.com/api_test/api"; // aws status: enabled
+  // static const String baseUrl = "https://h2gg75q310.execute-api.ap-northeast-1.amazonaws.com/api_test/api"; // [aws] status: enabled
+  static const String baseUrl = "https://proxy-528569998198.asia-east1.run.app/api"; // [cloud function] status: enabled
 
   static const String socialMedias = "$baseUrl/SocialMedias";
   static const String petKnowledges = "$baseUrl/PetKnowledges";
