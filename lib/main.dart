@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
       ],
       // 初始語言
       locale: const Locale('zh'),
-      title: 'Flutter Demo',
+      title: '寵物森友會',
       theme: ThemeData(
         appBarTheme: const AppBarTheme(
           scrolledUnderElevation: 0.0,
