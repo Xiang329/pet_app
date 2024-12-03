@@ -25,7 +25,7 @@ class _LoadPageState extends State<LoadPage> {
   }
 
   Future<void> loadPage() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 2000));
     setState(() {
       _isLoading = false;
     });
