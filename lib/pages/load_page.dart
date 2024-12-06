@@ -60,7 +60,11 @@ class _LoadPageState extends State<LoadPage> {
           setMetaThemeColor(UiColor.theme2Color);
           Provider.of<AppProvider>(context, listen: false)
               .setEamil(user.email!);
-          return const HomeContainerPage();
+          return Container(
+            padding: EdgeInsets.only(bottom: isSafariPwa() ? 16 : 0),
+            color: UiColor.theme2Color,
+            child: const HomeContainerPage(),
+          );
         }
       },
     );
