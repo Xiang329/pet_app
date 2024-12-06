@@ -105,32 +105,21 @@ class SocialPageState extends State<SocialPage> {
               );
             }),
       ),
-      floatingActionButton: FutureBuilder(
-        future: fetchAllSocialMedias,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return const SizedBox();
-            }
-            return FloatingActionButton(
-              backgroundColor: UiColor.theme2Color,
-              shape: const CircleBorder(),
-              onPressed: () async {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (context) => const AddPostPage(),
-                  ),
-                );
-              },
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-              ),
-            );
-          }
-          return const SizedBox();
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: UiColor.theme2Color,
+        shape: const CircleBorder(),
+        onPressed: () async {
+          Navigator.push(
+            context,
+            CupertinoPageRoute(
+              builder: (context) => const AddPostPage(),
+            ),
+          );
         },
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }
