@@ -24,6 +24,14 @@
   <meta name="apple-mobile-web-app-title" content="pet_app">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
+  <!-- iOS web and PWA status bar color -->
+  <meta name="theme-color" content="#FFFFFF">
+  <script>
+    function setMetaThemeColor(color) {
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", color);
+      }
+  </script>
+
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 

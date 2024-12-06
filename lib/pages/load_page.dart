@@ -6,6 +6,7 @@ import 'package:pet_app/pages/auth/login_page.dart';
 import 'package:pet_app/pages/home_container_page.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_app/providers/app_provider.dart';
+import 'package:pet_app/utils/web_util.dart';
 import 'package:provider/provider.dart';
 
 class LoadPage extends StatefulWidget {
@@ -22,6 +23,7 @@ class _LoadPageState extends State<LoadPage> {
   void initState() {
     super.initState();
     loadPage();
+    setMetaThemeColor(const Color(0xFFb9e5f4));
   }
 
   Future<void> loadPage() async {
@@ -52,8 +54,10 @@ class _LoadPageState extends State<LoadPage> {
           );
         }
         if (user == null) {
+          setMetaThemeColor(UiColor.theme1Color);
           return const LoginPage();
         } else {
+          setMetaThemeColor(UiColor.theme2Color);
           Provider.of<AppProvider>(context, listen: false)
               .setEamil(user.email!);
           return const HomeContainerPage();
